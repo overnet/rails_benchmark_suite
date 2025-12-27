@@ -1,0 +1,22 @@
+# MIT License
+# Copyright (c) 2024 RailsBenchmarkSuite Contributors
+
+module RailsBenchmarkSuite
+  module Reporter
+    module_function
+
+    def system_info
+      {
+        ruby_version: RUBY_VERSION,
+        platform: RUBY_PLATFORM,
+        processors: Concurrent.processor_count,
+        libvips: libvips?
+      }
+    end
+
+    def libvips?
+      # Naive check for libvips presence
+      system("vips --version", out: File::NULL, err: File::NULL)
+    end
+  end
+end
