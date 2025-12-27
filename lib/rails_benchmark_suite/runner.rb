@@ -39,7 +39,12 @@ module RailsBenchmarkSuite
           # Multi Threaded (4 threads)
           x.report("#{suite[:name]} (4 threads)") do
             threads = 4.times.map do
-              Thread.new { suite[:block].call }
+              Thread.new do
+                # Ensure each thread gets a dedicated connection
+                ActiveRecord::Base.connection_pool.with_connection do
+                  suite[:block].call
+                end
+              end
             end
             threads.each(&:join)
           end
