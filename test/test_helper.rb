@@ -1,0 +1,6 @@
+# MIT License
+# Copyright (c) 2024 RailsBenchmarkSuite Contributors
+
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "rails_benchmark_suite"
+require "minitest/autorun"
