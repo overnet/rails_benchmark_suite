@@ -2,8 +2,7 @@
 # Copyright (c) 2024 RailsBenchmarkSuite Contributors
 
 require "concurrent"
-require "rails_benchmark_suite/reporter"
-require "concurrent"
+require "rails_benchmark_suite/version"
 require "rails_benchmark_suite/reporter"
 require "rails_benchmark_suite/runner"
 require "rails_benchmark_suite/db_setup"
