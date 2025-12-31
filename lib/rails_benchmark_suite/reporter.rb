@@ -10,8 +10,13 @@ module RailsBenchmarkSuite
         ruby_version: RUBY_VERSION,
         platform: RUBY_PLATFORM,
         processors: Concurrent.processor_count,
-        libvips: libvips?
+        libvips: libvips?,
+        yjit: yjit_enabled?
       }
+    end
+
+    def yjit_enabled?
+      defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
     end
 
     def libvips?

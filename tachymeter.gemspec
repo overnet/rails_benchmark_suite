@@ -1,9 +1,11 @@
 # MIT License
 # Copyright (c) 2024 RailsBenchmarkSuite Contributors
 
+require_relative "lib/rails_benchmark_suite/version"
+
 Gem::Specification.new do |spec|
   spec.name          = "rails_benchmark_suite"
-  spec.version       = "0.1.0"
+  spec.version       = RailsBenchmarkSuite::VERSION
   spec.authors       = ["RailsBenchmarkSuite Contributors"]
   spec.email         = ["team@rails.org"]
 

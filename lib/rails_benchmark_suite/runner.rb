@@ -66,13 +66,14 @@ module RailsBenchmarkSuite
       end
       
       print_summary(results)
+      results
     end
 
     private
 
     def system_report
       info = RailsBenchmarkSuite::Reporter.system_info
-      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. Libvips: #{info[:libvips]}"
+      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{info[:yjit]}. Libvips: #{info[:libvips]}"
     end
 
     def print_summary(results)

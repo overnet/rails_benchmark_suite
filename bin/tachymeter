@@ -4,5 +4,12 @@
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "rails_benchmark_suite"
+require "rails_benchmark_suite/version"
 
+if ARGV.include?("--version") || ARGV.include?("-v")
+  puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
+  exit 0
+end
+
+puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
 RailsBenchmarkSuite.run
