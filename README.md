@@ -33,6 +33,23 @@ bundle install
 bin/rails_benchmark_suite
 ```
 
+### Using in a Rails Application
+RailsBenchmarkSuite is "Rails-aware." If you run it inside a Rails project, it will automatically load your environment, allowing you to benchmark against your real database connection or models if you write custom suites.
+
+1. Add to your `Gemfile`:
+   ```ruby
+   gem "rails_benchmark_suite", path: "path/to/rails_benchmark_suite", group: :development
+   # Or once published:
+   # gem "rails_benchmark_suite", group: :development
+   ```
+
+2. Run via bundle:
+   ```bash
+   bundle exec rails_benchmark_suite
+   ```
+
+   *Note: Use `--skip-rails` to ignore the host application and run isolated.*
+
 ### Sample Output
 ```text
 == Running Suite: Active Record Heft ==

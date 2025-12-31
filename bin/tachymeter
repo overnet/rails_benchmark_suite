@@ -2,14 +2,45 @@
 # MIT License
 # Copyright (c) 2024 RailsBenchmarkSuite Contributors
 
+require "optparse"
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "rails_benchmark_suite"
 require "rails_benchmark_suite/version"
 
-if ARGV.include?("--version") || ARGV.include?("-v")
-  puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
-  exit 0
-end
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: rails_benchmark_suite [options]"
+
+  opts.on("-v", "--version", "Print version") do
+    puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
+    exit 0
+  end
+
+  opts.on("--skip-rails", "Skip Rails environment loading") do
+    options[:skip_rails] = true
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit 0
+  end
+end.parse!
 
 puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
+
+# Rails Detection
+rails_env_path = File.join(Dir.pwd, "config", "environment.rb")
+
+if !options[:skip_rails] && File.exist?(rails_env_path)
+  puts "Rails environment detected at #{rails_env_path}. Loading..."
+  require rails_env_path
+  puts "Rails loaded successfully."
+else
+  if options[:skip_rails]
+    puts "Skipping Rails loading (requested via --skip-rails)."
+  else
+    puts "No Rails environment detected (config/environment.rb not found)."
+  end
+end
+
 RailsBenchmarkSuite.run

@@ -14,6 +14,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/rails/rails_benchmark_suite"
   spec.license       = "MIT"
 
+  spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = "https://github.com/rails/rails_benchmark_suite"
+  spec.metadata["changelog_uri"] = "https://github.com/rails/rails_benchmark_suite/blob/main/CHANGELOG.md"
+
   spec.files         = Dir["lib/**/*", "bin/*", "README.md", "LICENSE"]
   spec.bindir        = "bin"
   spec.executables   = ["rails_benchmark_suite"]
