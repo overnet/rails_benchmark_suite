@@ -17,6 +17,13 @@ The **Heft Score** is a weighted metric representing your machine's ability to h
 | **150+** | 🚀 High Performance | Apple M1/M2/M3 Pro/Max, Ryzen 5000+ |
 | **300+** | ⚡ Blazing | Server-grade Metal, M3 Ultra |
 
+## Technical Philosophy
+RailsBenchmarkSuite explicitly uses **Benchmarking** (via `benchmark-ips`) rather than **Profiling**.
+
+Profiling tools (like StackProf or Vernier) are excellent for debugging *why* code is slow, but they introduce significant overhead due to method-call instrumentation. This overhead can skew comparative metrics.
+
+By focusing on **raw iterations per second (IPS)** of realistic workloads without instrumentation, RailsBenchmarkSuite ensures the **Heft Score** remains a pure, unbiased metric of your hardware and framework throughput.
+
 ## Credits
 RailsBenchmarkSuite was conceived from the ["Rails 8.1 / 9.0" performance discussion](https://github.com/rails/rails/issues/50451).
 
