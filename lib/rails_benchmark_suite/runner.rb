@@ -6,8 +6,9 @@ require "get_process_mem"
 
 module RailsBenchmarkSuite
   class Runner
-    def initialize(suites)
+    def initialize(suites, json: false)
       @suites = suites
+      @json_output = json
     end
 
     def register(name, &block)
@@ -15,14 +16,14 @@ module RailsBenchmarkSuite
     end
 
     def run
-      puts "Running RailsBenchmarkSuite Benchmarks..."
-      puts system_report
-      puts "\n"
+      puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
+      puts system_report unless @json_output
+      puts "\n" unless @json_output
 
       results = {}
 
       @suites.each do |suite|
-        puts "== Running Suite: #{suite[:name]} =="
+        puts "== Running Suite: #{suite[:name]} ==" unless @json_output
         
         # Capture memory before
         mem_before = GetProcessMem.new.mb
@@ -61,8 +62,8 @@ module RailsBenchmarkSuite
           weight: suite[:weight]
         }
         
-        puts "Memory Footprint: #{mem_after.round(2)} MB (+#{(mem_after - mem_before).round(2)} MB)"
-        puts "\n"
+        puts "Memory Footprint: #{mem_after.round(2)} MB (+#{(mem_after - mem_before).round(2)} MB)" unless @json_output
+        puts "\n" unless @json_output
       end
       
       print_summary(results)
@@ -77,6 +78,11 @@ module RailsBenchmarkSuite
     end
 
     def print_summary(results)
+      if @json_output
+        print_json(results)
+        return
+      end
+
       puts "\n"
       puts "=========================================================================================="
       puts "| %-25s | %-25s | %-12s | %-15s |" % ["Suite", "IPS (1t / 4t)", "Scaling", "Mem Delta"]
@@ -113,6 +119,42 @@ module RailsBenchmarkSuite
       puts "\n"
       puts "  >>> FINAL HEFT SCORE: #{total_score.round(0)} <<<"
       puts "\n"
+    end
+
+    def print_json(results)
+      require "json"
+      
+      out = {
+        system: RailsBenchmarkSuite::Reporter.system_info,
+        total_score: 0,
+        suites: []
+      }
+      
+      total_score = 0
+      
+      results.each do |name, data|
+        weight = data[:weight] || 1.0
+        
+        # Parse reports
+        ips_1t = data[:report].entries.find { |e| e.label.include?("(1 thread)") }&.ips || 0
+        ips_4t = data[:report].entries.find { |e| e.label.include?("(4 threads)") }&.ips || 0
+        
+        weighted_score = ips_4t * weight
+        total_score += weighted_score
+        
+        out[:suites] << {
+          name: name,
+          weight: weight,
+          ips_1t: ips_1t,
+          ips_4t: ips_4t,
+          scaling: ips_1t > 0 ? (ips_4t / ips_1t) : 0,
+          memory_delta_mb: data[:memory_delta_mb],
+          score: weighted_score
+        }
+      end
+      
+      out[:total_score] = total_score.round(0)
+      puts out.to_json
     end
 
     def humanize(ips)

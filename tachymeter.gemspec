@@ -25,6 +25,9 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "benchmark-ips"
   spec.add_dependency "activerecord"
+  spec.add_dependency "actionview"
+  spec.add_dependency "activestorage"
+  spec.add_dependency "image_processing"
   spec.add_dependency "sqlite3"
   spec.add_dependency "concurrent-ruby"
   spec.add_dependency "get_process_mem"

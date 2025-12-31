@@ -4,7 +4,7 @@ require "active_record"
 require "json"
 
 
-RailsBenchmarkSuite.register_suite("Job Heft", weight: 0.3) do
+RailsBenchmarkSuite.register_suite("Job Heft", weight: 0.2) do
   # Simulation: Enqueue 100 jobs, then work them off
   
   # 1. Enqueue Loop
@@ -17,13 +17,12 @@ RailsBenchmarkSuite.register_suite("Job Heft", weight: 0.3) do
   end
 
   # 2. Worker Loop (Drain the queue)
-  # Simulate a worker polling and claiming jobs
   loop do
-    # Simulate worker latency & transactional safety
     processed = false
     
+    # Transactional polling
     ActiveRecord::Base.transaction do
-      # Fetch batch (simplified Solid Queue polling style)
+      # Fetch batch
       jobs = RailsBenchmarkSuite::Models::SimulatedJob.where("scheduled_at <= ?", Time.now).order(:created_at).limit(10)
       
       if jobs.any?
@@ -36,7 +35,7 @@ RailsBenchmarkSuite.register_suite("Job Heft", weight: 0.3) do
     
     break unless processed
     
-    # Tiny sleep to simulate latency of a real worker
+    # Simulate worker internal latency
     sleep(0.001)
   end
 end

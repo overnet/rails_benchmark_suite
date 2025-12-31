@@ -10,7 +10,7 @@ ActiveRecord::Base.logger = nil
 # Setup In-Memory SQLite globally for all suites
 # storage_config = ActiveRecord::DatabaseConfigurations::HashConfig.new("test", "sqlite3", { adapter: "sqlite3", database: ":memory:" })
 # Use shared cache to allow threads to see the same in-memory database
-# SKIP if we are inside a Rails app (config/environment.rb loaded)
+# Skip internal database setup if running within a Rails application
 unless defined?(Rails)
   ActiveRecord::Base.establish_connection(
     adapter: "sqlite3", 

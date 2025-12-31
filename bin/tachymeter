@@ -20,6 +20,10 @@ OptionParser.new do |opts|
     options[:skip_rails] = true
   end
 
+  opts.on("-j", "--json", "Output results as JSON") do
+    options[:json] = true
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit 0
@@ -43,4 +47,4 @@ else
   end
 end
 
-RailsBenchmarkSuite.run
+RailsBenchmarkSuite.run(json: options[:json])

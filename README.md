@@ -12,10 +12,17 @@ The **Heft Score** is a weighted metric representing your machine's ability to h
 | Score | Classification | Comparable Hardware |
 | :--- | :--- | :--- |
 | **< 40** | 🐢 Sluggish | Older Intel Macs, Entry-level VPS |
-| **60** | 🚙 Capable | Standard Cloud VM (c5.large/standard), older M1 Air |
+| **60** | 🚙 Capable | Standard Cloud VM (c5.large/standard) |
 | **100** | 🏎️ **Baseline** | **AWS c6g.large (2 vCPU ARM)** |
 | **150+** | 🚀 High Performance | Apple M1/M2/M3 Pro/Max, Ryzen 5000+ |
 | **300+** | ⚡ Blazing | Server-grade Metal, M3 Ultra |
+
+## Credits
+RailsBenchmarkSuite was conceived from the ["Rails 8.1 / 9.0" performance discussion](https://github.com/rails/rails/issues/50451).
+
+- **Concept**: DHH (David Heinemeier Hansson)
+- **Name**: Joe Dupuis
+- **Implementation**: The Rails Community
 
 ## 🚀 Installation & Usage
 

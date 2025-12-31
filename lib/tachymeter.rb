@@ -18,14 +18,14 @@ module RailsBenchmarkSuite
     @suites << { name: name, weight: weight, block: block }
   end
 
-  def self.run
+  def self.run(json: false)
     # Load Schema
     RailsBenchmarkSuite::Schema.load
     
     # Load suites
     Dir[File.join(__dir__, "rails_benchmark_suite", "suites", "*.rb")].each { |f| require f }
     
-    runner = Runner.new(@suites)
+    runner = Runner.new(@suites, json: json)
     runner.run
   end
 end
