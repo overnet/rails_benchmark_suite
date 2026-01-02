@@ -17,17 +17,15 @@ module RailsBenchmarkSuite
     SETUP_MUTEX = Mutex.new
 
     def run
-      # Hardened Isolation: In-memory Shared Cache URI (v0.2.6)
+      # Zero-Config Isolation: Simple in-memory database (v0.2.7)
       ActiveRecord::Base.establish_connection(
         adapter: "sqlite3",
-        database: "file:heft_db?mode=memory&cache=shared",
-        pool: 20,
-        timeout: 10000
+        database: ":memory:",
+        pool: 20
       )
 
-      # Explicit Busy Timeout (Critical for multi-threading)
-      raw_db = ActiveRecord::Base.connection.raw_connection
-      raw_db.busy_timeout = 10000
+      # The 'Busy Timeout' Hammer - force it directly on the connection
+      ActiveRecord::Base.connection.execute("PRAGMA busy_timeout = 10000")
       
       # Setup Schema once safely with Mutex
       SETUP_MUTEX.synchronize do
@@ -37,9 +35,9 @@ module RailsBenchmarkSuite
         end
       end
 
-      # High-Performance Concurrency Pragmas
-      raw_db.execute("PRAGMA journal_mode = WAL")
-      raw_db.execute("PRAGMA synchronous = OFF")
+      # High-Performance Pragmas
+      ActiveRecord::Base.connection.execute("PRAGMA journal_mode = WAL")
+      ActiveRecord::Base.connection.execute("PRAGMA synchronous = OFF")
 
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
       puts system_report unless @json_output
@@ -99,8 +97,12 @@ module RailsBenchmarkSuite
 
     def system_report
       info = RailsBenchmarkSuite::Reporter.system_info
-      yjit_status = !!(defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?)
-      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{yjit_status ? 'Enabled' : 'Disabled'}. Libvips: #{info[:libvips]}"
+      yjit_status = if defined?(RubyVM::YJIT)
+        RubyVM::YJIT.enabled? ? "Enabled" : "Disabled"
+      else
+        "Not supported by this Ruby binary"
+      end
+      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{yjit_status}. Libvips: #{info[:libvips]}"
     end
 
     def print_summary(results)
