@@ -51,17 +51,9 @@ Add to your Gemfile:
 gem "rails_benchmark_suite", group: :development
 ```
 
-## Quick Start
-
-For the best performance measurement with YJIT enabled:
-
-```bash
-ruby --yjit -S bundle exec rails_benchmark_suite
-```
-
 ## Usage
 
-To get the most accurate 'Heft' score within a Rails project context, run:
+To get the most accurate 'Heft' score, run with YJIT enabled:
 
 ```bash
 ruby --yjit -S bundle exec rails_benchmark_suite
