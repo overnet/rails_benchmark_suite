@@ -17,12 +17,12 @@ module RailsBenchmarkSuite
     SETUP_MUTEX = Mutex.new
 
     def run
-      # Hardened Isolation: Shared Cache URI for multi-threading (v0.2.7)
+      # Ultimate Hardening: Massive pool and timeout for zero lock contention (v0.2.8)
       ActiveRecord::Base.establish_connection(
         adapter: "sqlite3",
         database: "file:heft_db?mode=memory&cache=shared",
-        pool: 16,
-        timeout: 10000
+        pool: 50,
+        timeout: 30000
       )
 
       # The 'Busy Timeout' Hammer - force it directly on the raw connection
@@ -36,8 +36,9 @@ module RailsBenchmarkSuite
         end
       end
 
-      # High-Performance Pragmas
-      ActiveRecord::Base.connection.raw_connection.execute("PRAGMA synchronous = OFF")
+      # High-Performance Pragmas for WAL + NORMAL sync
+      ActiveRecord::Base.connection.raw_connection.execute("PRAGMA journal_mode = WAL")
+      ActiveRecord::Base.connection.raw_connection.execute("PRAGMA synchronous = NORMAL")
       ActiveRecord::Base.connection.raw_connection.execute("PRAGMA mmap_size = 268435456") # 256MB - reduce disk I/O
 
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output

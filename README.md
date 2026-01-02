@@ -23,7 +23,7 @@ The Heft Score is a weighted metric representing a machine's ability to handle R
 ```bash
 ruby --yjit -S bundle exec rails_benchmark_suite
 ```
-**Note:** `bundle exec` is required to prevent Minitest version conflicts.
+**Note:** `bundle exec` is required for Rails environment stability and to prevent Minitest version conflicts.
 
 ## 🛠 Technical Philosophy
 
