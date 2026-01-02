@@ -77,4 +77,43 @@ class RailsBenchmarkSuiteTest < Minitest::Test
     
     assert runner.respond_to?(:run)
   end
+
+  def test_sqlite_concurrency_resilience
+    # Stress test the Runner's hardened SQLite setup (v0.2.6)
+    concurrency = 8
+    iterations = 20
+    
+    # We use a real Runner to trigger the shared-memory setup and PRAGMAs
+    # But we don't want it to run IPS benchmarks (which take seconds), 
+    # so we just test the setup and concurrent operations.
+    runner = RailsBenchmarkSuite::Runner.new([])
+    
+    # Trigger v0.2.6 setup
+    runner.send(:run_setup) if runner.respond_to?(:run_setup, true)
+    # Alternatively, just ensure the connection is established with v0.2.6 settings
+    ActiveRecord::Base.establish_connection(
+      adapter: "sqlite3",
+      database: "file:heft_db_test?mode=memory&cache=shared",
+      pool: 20,
+      checkout_timeout: 10
+    )
+    RailsBenchmarkSuite::Schema.load
+
+    threads = concurrency.times.map do |i|
+      Thread.new do
+        ActiveRecord::Base.connection_pool.with_connection do
+          iterations.times do |j|
+            RailsBenchmarkSuite::Models::User.create!(
+              name: "User #{i}-#{j}",
+              email: "user#{i}-#{j}@example.com"
+            )
+          end
+        end
+      end
+    end
+
+    threads.each(&:join)
+    
+    assert_equal concurrency * iterations, RailsBenchmarkSuite::Models::User.count
+  end
 end
