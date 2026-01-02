@@ -100,7 +100,9 @@ module RailsBenchmarkSuite
       yield
     rescue ActiveRecord::StatementInvalid => e
       if e.message =~ /locked/i
-        sleep(rand(0.001..0.01)) # Randomized backoff to break thread lock-step
+        # Specifically drop the lock for THIS connection only
+        ActiveRecord::Base.connection.reset!
+        sleep(rand(0.01..0.05))
         retry
       else
         raise e
