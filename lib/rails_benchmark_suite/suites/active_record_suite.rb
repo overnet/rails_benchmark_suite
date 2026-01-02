@@ -6,27 +6,32 @@ require "active_record"
 RailsBenchmarkSuite.register_suite("Active Record Heft", weight: 0.4) do
   # Workload: Create User with Posts, Join Query, Update
   # Use transaction rollback to keep the DB clean and avoid costly destroy callbacks
-  ActiveRecord::Base.transaction do
-    # 1. Create
-    user = RailsBenchmarkSuite::Models::User.create!(name: "Speedy Gonzales", email: "speedy@example.com")
-    
-    # 2. Create associated records (simulate some weight)
-    10.times do |i|
-      user.posts.create!(title: "Post #{i}", body: "Content " * 50)
+  begin
+    ActiveRecord::Base.transaction do
+      # 1. Create
+      user = RailsBenchmarkSuite::Models::User.create!(name: "Speedy Gonzales", email: "speedy@example.com")
+      
+      # 2. Create associated records (simulate some weight)
+      10.times do |i|
+        user.posts.create!(title: "Post #{i}", body: "Content " * 50)
+      end
+      
+      # 3. Complex Query (Join + Order)
+      # Unloading the relation to force execution
+      RailsBenchmarkSuite::Models::User.joins(:posts)
+                  .where(users: { id: user.id })
+                  .where("posts.views >= ?", 0)
+                  .order("posts.created_at DESC")
+                  .to_a
+      
+      # 4. Update
+      user.update!(name: "Slowpoke Rodriguez")
+      
+      # Rollback everything to leave the DB clean for next iteration
+      raise ActiveRecord::Rollback
     end
-    
-    # 3. Complex Query (Join + Order)
-    # Unloading the relation to force execution
-    RailsBenchmarkSuite::Models::User.joins(:posts)
-                .where(users: { id: user.id })
-                .where("posts.views >= ?", 0)
-                .order("posts.created_at DESC")
-                .to_a
-    
-    # 4. Update
-    user.update!(name: "Slowpoke Rodriguez")
-    
-    # Rollback everything to leave the DB clean for next iteration
-    raise ActiveRecord::Rollback
+  rescue ActiveRecord::StatementInvalid => e
+    retry if e.message.include?('locked')
+    raise e
   end
 end

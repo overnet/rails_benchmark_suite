@@ -21,11 +21,12 @@ module RailsBenchmarkSuite
       ActiveRecord::Base.establish_connection(
         adapter: "sqlite3",
         database: ":memory:",
-        pool: 20
+        pool: 16,
+        timeout: 10000
       )
 
-      # The 'Busy Timeout' Hammer - force it directly on the connection
-      ActiveRecord::Base.connection.execute("PRAGMA busy_timeout = 10000")
+      # The 'Busy Timeout' Hammer - force it directly on the raw connection
+      ActiveRecord::Base.connection.raw_connection.busy_timeout = 10000
       
       # Setup Schema once safely with Mutex
       SETUP_MUTEX.synchronize do
@@ -36,8 +37,7 @@ module RailsBenchmarkSuite
       end
 
       # High-Performance Pragmas
-      ActiveRecord::Base.connection.execute("PRAGMA journal_mode = WAL")
-      ActiveRecord::Base.connection.execute("PRAGMA synchronous = OFF")
+      ActiveRecord::Base.connection.raw_connection.execute("PRAGMA synchronous = OFF")
 
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
       puts system_report unless @json_output
