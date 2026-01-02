@@ -51,10 +51,31 @@ Add to your Gemfile:
 gem "rails_benchmark_suite", group: :development
 ```
 
-Run via bundle:
+## Usage
+
+To get the most accurate 'Heft' score within a Rails project context, run:
 
 ```bash
-bundle exec rails_benchmark_suite
+ruby --yjit -S bundle exec rails_benchmark_suite
+```
+
+**Why these flags?**
+- `--yjit`: Enables the Ruby JIT compiler (significant for Rails 8+ performance).
+- `-S`: Corrects the path to look for the executable in your current bundle.
+- `bundle exec`: Prevents version conflicts (e.g., Minitest) between the gem and your host application.
+
+**Standalone Usage:**
+If running outside a Rails project:
+
+```bash
+bin/rails_benchmark_suite
+```
+
+**JSON Output:**
+For programmatic consumption:
+
+```bash
+ruby --yjit -S bundle exec rails_benchmark_suite --json
 ```
 
 > **Note:** Use `--skip-rails` to ignore the host application and run in isolated mode.
