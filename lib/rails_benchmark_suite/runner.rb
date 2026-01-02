@@ -38,6 +38,7 @@ module RailsBenchmarkSuite
 
       # High-Performance Pragmas
       ActiveRecord::Base.connection.raw_connection.execute("PRAGMA synchronous = OFF")
+      ActiveRecord::Base.connection.raw_connection.execute("PRAGMA mmap_size = 268435456") # 256MB - reduce disk I/O
 
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
       puts system_report unless @json_output
@@ -57,7 +58,7 @@ module RailsBenchmarkSuite
           
           # Single Threaded
           x.report("#{suite[:name]} (1 thread)") do
-            suite[:block].call
+            with_retries { suite[:block].call }
           end
 
           # Multi Threaded (4 threads)
@@ -66,7 +67,7 @@ module RailsBenchmarkSuite
               Thread.new do
                 # Ensure each thread gets a dedicated connection
                 ActiveRecord::Base.connection_pool.with_connection do
-                  suite[:block].call
+                  with_retries { suite[:block].call }
                 end
               end
             end
@@ -94,6 +95,17 @@ module RailsBenchmarkSuite
     end
 
     private
+
+    def with_retries
+      yield
+    rescue ActiveRecord::StatementInvalid => e
+      if e.message =~ /locked/i
+        sleep(rand(0.001..0.01)) # Randomized backoff to break thread lock-step
+        retry
+      else
+        raise e
+      end
+    end
 
     def system_report
       info = RailsBenchmarkSuite::Reporter.system_info

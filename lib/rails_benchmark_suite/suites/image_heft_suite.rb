@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Check if vips is available at registration time
 begin
   require "image_processing/vips"
   require "fileutils"
@@ -9,6 +10,7 @@ begin
   FileUtils.mkdir_p(ASSET_DIR)
   SAMPLE_IMAGE = File.join(ASSET_DIR, "sample.jpg")
 
+  # Only register if vips is actually available
   RailsBenchmarkSuite.register_suite("Image Heft", weight: 0.1) do
     # Gracefully handle missing dependencies
     if File.exist?(SAMPLE_IMAGE)
@@ -22,13 +24,8 @@ begin
     end
   end
 
-rescue LoadError, StandardError => e
-  # Register a skipped suite if Libvips is unavailable
-  RailsBenchmarkSuite.register_suite("Image Heft (Skipped)", weight: 0.0) do
-    @warned ||= begin
-      warn "⚠️  [RailsBenchmarkSuite] ImageHeft skipped: #{e.message}. Install libvips to enable."
-      true
-    end
-  end
+rescue LoadError, StandardError
+  # Don't register the suite at all if vips is unavailable
+  puts "⚠️  Skipping Image Heft: libvips not available. Install with: brew install vips (macOS)"
 end
 
