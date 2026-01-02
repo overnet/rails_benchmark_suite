@@ -84,6 +84,14 @@ ruby --yjit -S bundle exec rails_benchmark_suite --json
 
 > **Note:** Use `--skip-rails` to ignore the host application and run in isolated mode.
 
+## Performance
+
+**Understanding YJIT Status:**
+
+If you see `YJIT: Disabled`, this is a result of your Ruby binary build, not the gem itself. The gem will work perfectly fine without YJIT, but performance measurements will be more accurate with YJIT enabled.
+
+To enable YJIT, you need Ruby compiled with YJIT support (requires Rust compiler during Ruby installation). See the Troubleshooting section below for installation instructions.
+
 ## Troubleshooting
 
 ### YJIT Shows "Disabled"

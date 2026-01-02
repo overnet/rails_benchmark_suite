@@ -35,7 +35,7 @@ RailsBenchmarkSuite.register_suite("Active Record Heft", weight: 0.4) do
     end
   rescue ActiveRecord::StatementInvalid => e
     if e.message =~ /locked/i
-      sleep(0.01)
+      sleep(0.005)
       retry
     else
       raise e
