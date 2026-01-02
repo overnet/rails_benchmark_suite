@@ -38,7 +38,7 @@ end
   
   # Dummy Objects
   user = OpenStruct.new(name: "Speedy")
-  posts = 50.times.map { |i| OpenStruct.new(title: "Post #{i}", body: "Content " * 10, views: i * 1000) }
+  posts = 100.times.map { |i| OpenStruct.new(title: "Post #{i}", body: "Content " * 10, views: i * 1000) }
 
   # Execution
   @view_renderer.render(inline: template, locals: { user: user, posts: posts })

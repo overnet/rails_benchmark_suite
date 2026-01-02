@@ -13,12 +13,12 @@ RailsBenchmarkSuite.register_suite("Cache Heft", weight: 0.1) do
   key_prefix = "cache_test_#{SecureRandom.hex(4)}"
   
   # 1. Bulk Write
-  100.times do |i|
+  1000.times do |i|
     @cache.write("#{key_prefix}/#{i}", { data: "Precious Data " * 20, index: i })
   end
   
   # 2. Bulk Read
-  100.times do |i|
+  1000.times do |i|
     val = @cache.read("#{key_prefix}/#{i}")
     next if val.nil?
   end

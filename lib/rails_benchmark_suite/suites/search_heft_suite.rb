@@ -7,9 +7,20 @@
 RailsBenchmarkSuite.register_suite("Search Heft", weight: 0.1) do
   # Ensure test data exists
   unless defined?(@search_data_seeded)
-    if RailsBenchmarkSuite::Models::Post.count < 100
+    if RailsBenchmarkSuite::Models::Post.count < 10000
       user = RailsBenchmarkSuite::Models::User.first || RailsBenchmarkSuite::Models::User.create!(name: "Searcher")
-      100.times { |i| user.posts.create!(title: "Unique Title #{i}", body: "Searchable Content " * 20) }
+      # Batch insert for speed
+      records = 10000.times.map do |i|
+        { 
+          user_id: user.id,
+          title: "Unique Title #{i}", 
+          body: "Searchable Content " * 20,
+          views: i,
+          created_at: Time.now, 
+          updated_at: Time.now 
+        }
+      end
+      RailsBenchmarkSuite::Models::Post.insert_all(records)
     end
     @search_data_seeded = true
   end

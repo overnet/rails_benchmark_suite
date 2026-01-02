@@ -17,12 +17,17 @@ The **Heft Score** is a weighted metric representing your machine's ability to h
 | **150+** | 🚀 High Performance | Apple M1/M2/M3 Pro/Max, Ryzen 5000+ |
 | **300+** | ⚡ Blazing | Server-grade Metal, M3 Ultra |
 
-## Technical Philosophy
+## Technical Philosophy: The Marathon Result
 RailsBenchmarkSuite explicitly uses **Benchmarking** (via `benchmark-ips`) rather than **Profiling**.
 
-Profiling tools (like StackProf or Vernier) are excellent for debugging *why* code is slow, but they introduce significant overhead due to method-call instrumentation. This overhead can skew comparative metrics.
+**Benchmarking (RailsBenchmarkSuite)** is like running a marathon and checking the clock at the finish line. It tells you "How fast did we go?" It provides a single, comparable score (The Heft Score) that allows for reliable hardware comparisons.
 
-By focusing on **raw iterations per second (IPS)** of realistic workloads without instrumentation, RailsBenchmarkSuite ensures the **Heft Score** remains a pure, unbiased metric of your hardware and framework throughput.
+**Profiling** (Tools like StackProf or Vernier) is like wearing a heart rate monitor and oxygen sensor during the marathon. It tells you "Why were we slow at mile 12?" by hooking into every method call.
+
+**Why we avoid Profiling in RailsBenchmarkSuite:**
+1.  **Observer Overhead**: Instrumentation creates massive overhead, skewing the metric to measure the profiler rather than the app.
+2.  **Information Overload**: RailsBenchmarkSuite aims for "Conceptual Compression"—one clear number (e.g., Heft: 150), not a 500-line call tree.
+3.  **Statistical Noise**: Profilers drastically reduce iteration counts, whereas benchmarking runs code thousands of times to find a statistically significant average.
 
 ## Credits
 RailsBenchmarkSuite was conceived from the ["Rails 8.1 / 9.0" performance discussion](https://github.com/rails/rails/issues/50451).
