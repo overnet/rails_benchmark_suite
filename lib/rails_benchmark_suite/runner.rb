@@ -22,13 +22,14 @@ module RailsBenchmarkSuite
         adapter: "sqlite3",
         database: "file:heft_db?mode=memory&cache=shared",
         pool: 20,
-        checkout_timeout: 10
+        timeout: 10000
       )
 
-      # Concurrency Silver Bullet: Tuned Pragmas & Mutex-Serialized Setup
+      # Explicit Busy Timeout (Critical for multi-threading)
       raw_db = ActiveRecord::Base.connection.raw_connection
+      raw_db.busy_timeout = 10000
       
-      # Setup Schema once safely
+      # Setup Schema once safely with Mutex
       SETUP_MUTEX.synchronize do
         # Verify if schema already loaded by checking for a table
         unless ActiveRecord::Base.connection.table_exists?(:users)
@@ -36,11 +37,9 @@ module RailsBenchmarkSuite
         end
       end
 
-      # High-Performance Concurrency Tuning
-      raw_db.execute("PRAGMA mmap_size = 268435456") # 256MB Cache
-      raw_db.execute("PRAGMA busy_timeout = 10000")   # 10s wait
-      raw_db.execute("PRAGMA synchronous = OFF")     # Memory-safe performance
-      raw_db.execute("PRAGMA journal_mode = WAL")    # Multi-threaded safety
+      # High-Performance Concurrency Pragmas
+      raw_db.execute("PRAGMA journal_mode = WAL")
+      raw_db.execute("PRAGMA synchronous = OFF")
 
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
       puts system_report unless @json_output
