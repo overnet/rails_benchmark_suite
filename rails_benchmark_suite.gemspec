@@ -10,14 +10,16 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Rails-style functionality & performance benchmark tool"
   spec.description   = "Measures the 'Heft' (processing power) of a machine using realistic Rails workloads."
-  spec.homepage      = "https://github.com/rails/rails_benchmark_suite"
+  spec.homepage      = "https://github.com/overnet/rails_benchmark_suite"
   spec.license       = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/rails/rails_benchmark_suite"
-  spec.metadata["changelog_uri"] = "https://github.com/rails/rails_benchmark_suite/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/overnet/rails_benchmark_suite"
+  spec.metadata["changelog_uri"] = "https://github.com/overnet/rails_benchmark_suite/blob/main/CHANGELOG.md"
 
-  spec.files         = Dir["lib/**/*", "bin/*", "README.md", "LICENSE.txt"]
+  spec.files = Dir.chdir(__dir__) do
+    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  end
   spec.bindir        = "bin"
   spec.executables   = ["rails_benchmark_suite"]
   spec.require_paths = ["lib"]
