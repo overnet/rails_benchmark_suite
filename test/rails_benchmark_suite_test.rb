@@ -6,7 +6,14 @@ class RailsBenchmarkSuiteTest < Minitest::Test
   def setup
     # Reset suites before each test to ensure isolation
     RailsBenchmarkSuite.instance_variable_set(:@suites, [])
-    # Ensure DB is connected
+    # Ensure DB is connected for tests (Isolated sandbox)
+    ActiveRecord::Base.establish_connection(
+      adapter: "sqlite3",
+      database: ":memory:",
+      pool: 5
+    )
+    # Verify connection
+    ActiveRecord::Base.connection
     RailsBenchmarkSuite::Schema.load
   end
 
@@ -55,6 +62,8 @@ class RailsBenchmarkSuiteTest < Minitest::Test
       "Suite A" => { memory_delta_mb: 10, weight: 0.7, report: report_a },
       "Suite B" => { memory_delta_mb: 5, weight: 0.3, report: report_b }
     }
+    
+    assert results.any?
     
     # We need to expose the private 'print_summary' or 'calculate_score' method to test it properly,
     # OR we can trust the 'runner.run' returns the results hash, but calculating the score happens inside print_summary.

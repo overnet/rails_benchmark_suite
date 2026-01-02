@@ -18,6 +18,14 @@ module RailsBenchmarkSuite
   end
 
   def self.run(json: false)
+    # Enforce database isolation: Always use in-memory SQLite, ignoring host app DB
+    ActiveRecord::Base.establish_connection(
+      adapter: "sqlite3",
+      database: "file:rails_benchmark_suite_mem?mode=memory&cache=shared",
+      pool: 20,
+      timeout: 10000
+    )
+
     # Load Schema
     RailsBenchmarkSuite::Schema.load
     
