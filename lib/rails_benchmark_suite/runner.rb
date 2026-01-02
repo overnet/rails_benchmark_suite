@@ -14,25 +14,33 @@ module RailsBenchmarkSuite
       @suites << { name: name, block: block }
     end
 
+    SETUP_MUTEX = Mutex.new
+
     def run
-      # Senior Fix: Isolate from host application's database with Shared Cache (v0.2.5)
+      # Hardened Isolation: In-memory Shared Cache URI (v0.2.6)
       ActiveRecord::Base.establish_connection(
         adapter: "sqlite3",
-        database: "file::memory:?cache=shared",
-        pool: 16,
-        timeout: 5000
+        database: "file:heft_db?mode=memory&cache=shared",
+        pool: 20,
+        checkout_timeout: 10
       )
 
-      # SQLite Performance Tuning for multi-threaded benchmarks
+      # Concurrency Silver Bullet: Tuned Pragmas & Mutex-Serialized Setup
       raw_db = ActiveRecord::Base.connection.raw_connection
-      raw_db.execute("PRAGMA journal_mode = WAL")      # Write-Ahead Logging
-      raw_db.execute("PRAGMA synchronous = NORMAL")   # Faster writes
       
-      # Add a custom busy handler for extra resilience (v0.2.5)
-      raw_db.busy_handler { |count| sleep(0.01); count < 100 }
+      # Setup Schema once safely
+      SETUP_MUTEX.synchronize do
+        # Verify if schema already loaded by checking for a table
+        unless ActiveRecord::Base.connection.table_exists?(:users)
+          RailsBenchmarkSuite::Schema.load
+        end
+      end
 
-      # Load Schema
-      RailsBenchmarkSuite::Schema.load
+      # High-Performance Concurrency Tuning
+      raw_db.execute("PRAGMA mmap_size = 268435456") # 256MB Cache
+      raw_db.execute("PRAGMA busy_timeout = 10000")   # 10s wait
+      raw_db.execute("PRAGMA synchronous = OFF")     # Memory-safe performance
+      raw_db.execute("PRAGMA journal_mode = WAL")    # Multi-threaded safety
 
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
       puts system_report unless @json_output
@@ -92,7 +100,8 @@ module RailsBenchmarkSuite
 
     def system_report
       info = RailsBenchmarkSuite::Reporter.system_info
-      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{info[:yjit] ? 'Enabled' : 'Disabled'}. Libvips: #{info[:libvips]}"
+      yjit_status = !!(defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?)
+      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{yjit_status ? 'Enabled' : 'Disabled'}. Libvips: #{info[:libvips]}"
     end
 
     def print_summary(results)
