@@ -168,8 +168,8 @@ PLATFORMS
 DEPENDENCIES
   bundler
   minitest
-  rake
   rails_benchmark_suite!
+  rake
 
 BUNDLED WITH
    2.5.9

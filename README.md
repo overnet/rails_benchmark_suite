@@ -1,6 +1,6 @@
 # RailsBenchmarkSuite
 
-> **RailsBenchmarkSuite** /tak-im-i-ter/ (noun): An instrument for measuring speed; specifically, a benchmark tool for modern Rails applications.
+
 
 RailsBenchmarkSuite is a **functionality & performance benchmark suite** designed to measure the "Heft" (processing power) of a machine using realistic, high-throughput Rails workloads. Unlike synthetic CPU benchmarks, RailsBenchmarkSuite simulates **Active Record object allocation, SQL query mix, and transaction latency**.
 
