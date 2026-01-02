@@ -19,6 +19,12 @@ The Heft Score is a weighted metric representing a machine's ability to handle R
 | 150+ | 🚀 High Performance | Apple M-series Pro/Max, Ryzen 5000+ |
 | 300+ | ⚡ Blazing | Server-grade Metal, M3 Ultra |
 
+### Quick Start
+```bash
+ruby --yjit -S bundle exec rails_benchmark_suite
+```
+**Note:** `bundle exec` is required to prevent Minitest version conflicts.
+
 ## 🛠 Technical Philosophy
 
 Rails Benchmark Suite prioritizes **Benchmarking** (via `benchmark-ips`) over **Profiling**.
