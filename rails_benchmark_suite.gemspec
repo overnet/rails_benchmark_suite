@@ -13,8 +13,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/overnet/rails_benchmark_suite"
   spec.license       = "MIT"
 
-  spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/overnet/rails_benchmark_suite"
+  spec.metadata["bug_tracker_uri"] = "https://github.com/overnet/rails_benchmark_suite/issues"
   spec.metadata["changelog_uri"] = "https://github.com/overnet/rails_benchmark_suite/blob/main/CHANGELOG.md"
 
   spec.files = Dir.chdir(__dir__) do
@@ -24,18 +24,18 @@ Gem::Specification.new do |spec|
   spec.executables   = ["rails_benchmark_suite"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "benchmark-ips"
-  spec.add_dependency "activerecord"
-  spec.add_dependency "actionview"
-  spec.add_dependency "activestorage"
-  spec.add_dependency "image_processing"
-  spec.add_dependency "sqlite3"
-  spec.add_dependency "concurrent-ruby"
-  spec.add_dependency "get_process_mem"
+  spec.add_dependency "benchmark-ips", "~> 2.14"
+  spec.add_dependency "activerecord", "~> 8.1"
+  spec.add_dependency "actionview", "~> 8.1"
+  spec.add_dependency "activestorage", "~> 8.1"
+  spec.add_dependency "image_processing", "~> 1.14"
+  spec.add_dependency "sqlite3", "~> 2.8"
+  spec.add_dependency "concurrent-ruby", "~> 1.3"
+  spec.add_dependency "get_process_mem", "~> 1.0"
 
-  spec.add_development_dependency "bundler"
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "minitest"
+  spec.add_development_dependency "bundler", "~> 2.5"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "minitest", "~> 5.0"
 
   spec.required_ruby_version = ">= 3.4.0"
 end
