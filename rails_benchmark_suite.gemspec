@@ -1,5 +1,4 @@
-# MIT License
-# Copyright (c) 2024 RailsBenchmarkSuite Contributors
+# frozen_string_literal: true
 
 require_relative "lib/rails_benchmark_suite/version"
 
@@ -18,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.metadata["source_code_uri"] = "https://github.com/rails/rails_benchmark_suite"
   spec.metadata["changelog_uri"] = "https://github.com/rails/rails_benchmark_suite/blob/main/CHANGELOG.md"
 
-  spec.files         = Dir["lib/**/*", "bin/*", "README.md", "LICENSE"]
+  spec.files         = Dir["lib/**/*", "bin/*", "README.md", "LICENSE.txt"]
   spec.bindir        = "bin"
   spec.executables   = ["rails_benchmark_suite"]
   spec.require_paths = ["lib"]

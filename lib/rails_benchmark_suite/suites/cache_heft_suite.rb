@@ -1,5 +1,4 @@
-# MIT License
-# Copyright (c) 2024 RailsBenchmarkSuite Contributors
+# frozen_string_literal: true
 
 require "active_support/cache"
 require "securerandom"

@@ -1,5 +1,4 @@
-# MIT License
-# Copyright (c) 2024 RailsBenchmarkSuite Contributors
+# frozen_string_literal: true
 
 require "benchmark/ips"
 require "get_process_mem"

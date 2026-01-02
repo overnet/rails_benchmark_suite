@@ -1,4 +1,4 @@
-# Copyright (c) 2024 RailsBenchmarkSuite Contributors
+# frozen_string_literal: true
 
 require "active_record"
 require "json"
