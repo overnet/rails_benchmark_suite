@@ -18,23 +18,6 @@ module RailsBenchmarkSuite
   end
 
   def self.run(json: false)
-    # Enforce database isolation: Always use in-memory SQLite, ignoring host app DB
-    ActiveRecord::Base.establish_connection(
-      adapter: "sqlite3",
-      database: "file:rails_benchmark_suite_mem?mode=memory&cache=shared",
-      pool: 20,
-      timeout: 10000
-    )
-
-    # SQLite Performance Tuning for multi-threaded benchmarks
-    db = ActiveRecord::Base.connection.raw_connection
-    db.execute("PRAGMA journal_mode = WAL")      # Write-Ahead Logging
-    db.execute("PRAGMA synchronous = NORMAL")   # Faster writes
-    db.execute("PRAGMA busy_timeout = 5000")    # Wait for lock instead of crashing
-
-    # Load Schema
-    RailsBenchmarkSuite::Schema.load
-    
     # Load suites
     Dir[File.join(__dir__, "rails_benchmark_suite", "suites", "*.rb")].each { |f| require f }
     

@@ -15,6 +15,23 @@ module RailsBenchmarkSuite
     end
 
     def run
+      # Senior Fix: Isolate from host application's database with Shared Cache (v0.2.4)
+      ActiveRecord::Base.establish_connection(
+        adapter: "sqlite3",
+        database: "file::memory:?cache=shared",
+        pool: 16,
+        timeout: 5000
+      )
+
+      # SQLite Performance Tuning for multi-threaded benchmarks
+      db = ActiveRecord::Base.connection.raw_connection
+      db.execute("PRAGMA journal_mode = WAL")      # Write-Ahead Logging
+      db.execute("PRAGMA synchronous = NORMAL")   # Faster writes
+      db.execute("PRAGMA busy_timeout = 5000")    # Wait for lock instead of crashing
+
+      # Load Schema
+      RailsBenchmarkSuite::Schema.load
+
       puts "Running RailsBenchmarkSuite Benchmarks..." unless @json_output
       puts system_report unless @json_output
       puts "\n" unless @json_output
