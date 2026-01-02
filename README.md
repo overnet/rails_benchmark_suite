@@ -28,6 +28,10 @@ Rails Benchmark Suite prioritizes **Benchmarking** (via `benchmark-ips`) over **
 
 ## 🚀 Installation & Usage
 
+### Requirements
+- **Ruby**: 3.3+ (Ruby with YJIT support highly recommended for accurate performance measurement)
+- **Database**: SQLite3
+
 ### Prerequisites
 * **Ruby:** 3.4.1+ (Recommended for latest YJIT/Prism performance)
 * **Database:** SQLite3
@@ -99,7 +103,14 @@ If you see `YJIT: Disabled (Requires Ruby with YJIT support for best results)`, 
 
 ### SQLite Lock Errors
 
-If you encounter `SQLite3::BusyException` or lock errors, ensure you're running the latest version of the gem (v0.2.7+) which includes automatic retry logic and optimized busy timeouts.
+If you encounter `SQLite3::BusyException` or "database table is locked" errors, ensure you're running the latest version of the gem (v0.2.7+) which includes automatic concurrency retries with smart backoff.
+
+**v0.2.7+** includes:
+- Automatic retry logic with sleep backoff
+- Per-thread unique identifiers to prevent conflicts
+- Optimized busy timeout settings (10 seconds)
+
+If issues persist, try reducing concurrency or ensuring no other processes are accessing the benchmark database.
 
 ## 🏗 Architecture
 * **Engine:** Built on `benchmark-ips`.

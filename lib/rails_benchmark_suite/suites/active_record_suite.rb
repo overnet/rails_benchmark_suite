@@ -8,8 +8,11 @@ RailsBenchmarkSuite.register_suite("Active Record Heft", weight: 0.4) do
   # Use transaction rollback to keep the DB clean and avoid costly destroy callbacks
   begin
     ActiveRecord::Base.transaction do
-      # 1. Create
-      user = RailsBenchmarkSuite::Models::User.create!(name: "Speedy Gonzales", email: "speedy@example.com")
+      # 1. Create - with unique email per thread
+      user = RailsBenchmarkSuite::Models::User.create!(
+        name: "Benchmark User", 
+        email: "test-#{Thread.current.object_id}@example.com"
+      )
       
       # 2. Create associated records (simulate some weight)
       10.times do |i|
@@ -25,13 +28,17 @@ RailsBenchmarkSuite.register_suite("Active Record Heft", weight: 0.4) do
                   .to_a
       
       # 4. Update
-      user.update!(name: "Slowpoke Rodriguez")
+      user.update!(name: "Updated User")
       
       # Rollback everything to leave the DB clean for next iteration
       raise ActiveRecord::Rollback
     end
   rescue ActiveRecord::StatementInvalid => e
-    retry if e.message.include?('locked')
-    raise e
+    if e.message =~ /locked/i
+      sleep(0.01)
+      retry
+    else
+      raise e
+    end
   end
 end
