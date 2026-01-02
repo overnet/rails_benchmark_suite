@@ -1,103 +1,77 @@
-# RailsBenchmarkSuite
+# Rails Benchmark Suite
 
+A standardized performance suite designed to measure the "Heft" of a machine using realistic, high-throughput Rails 8+ workloads.
 
-
-RailsBenchmarkSuite is a **functionality & performance benchmark suite** designed to measure the "Heft" (processing power) of a machine using realistic, high-throughput Rails workloads. Unlike synthetic CPU benchmarks, RailsBenchmarkSuite simulates **Active Record object allocation, SQL query mix, and transaction latency**.
+Unlike synthetic CPU benchmarks, **Rails Benchmark Suite** simulates Active Record object allocation, SQL query complexity, ActionView rendering, and background job throughput.
 
 ## 📊 The "Heft" Score
 
-The **Heft Score** is a weighted metric representing your machine's ability to handle Rails tasks. A score of **100** is calibrated to represent a standard cloud compute baseline (roughly equivalent to an **AWS c6g.large** ARM instance).
+The Heft Score is a weighted metric representing a machine's ability to handle Rails tasks. 
+- **Baseline:** A score of **100** is calibrated to represent an **AWS c6g.large** (ARM) instance.
+- **Objective:** To provide a simple, comparable number for evaluating different computing platforms (Cloud VMs, bare-metal, or local dev rigs).
 
-### Baseline Comparison
+### Baseline Comparisons
 | Score | Classification | Comparable Hardware |
 | :--- | :--- | :--- |
-| **< 40** | 🐢 Sluggish | Older Intel Macs, Entry-level VPS |
-| **60** | 🚙 Capable | Standard Cloud VM (c5.large/standard) |
-| **100** | 🏎️ **Baseline** | **AWS c6g.large (2 vCPU ARM)** |
-| **150+** | 🚀 High Performance | Apple M1/M2/M3 Pro/Max, Ryzen 5000+ |
-| **300+** | ⚡ Blazing | Server-grade Metal, M3 Ultra |
+| < 40 | 🐢 Sluggish | Older Intel Macs, Entry-level VPS |
+| 60 | 🚙 Capable | Standard Cloud VM (c5.large/standard) |
+| **100** | **🏎️ Baseline** | **AWS c6g.large (2 vCPU ARM)** |
+| 150+ | 🚀 High Performance | Apple M-series Pro/Max, Ryzen 5000+ |
+| 300+ | ⚡ Blazing | Server-grade Metal, M3 Ultra |
 
-## Technical Philosophy: The Marathon Result
-RailsBenchmarkSuite explicitly uses **Benchmarking** (via `benchmark-ips`) rather than **Profiling**.
+## 🛠 Technical Philosophy
 
-**Benchmarking (RailsBenchmarkSuite)** is like running a marathon and checking the clock at the finish line. It tells you "How fast did we go?" It provides a single, comparable score (The Heft Score) that allows for reliable hardware comparisons.
+Rails Benchmark Suite prioritizes **Benchmarking** (via `benchmark-ips`) over **Profiling**.
 
-**Profiling** (Tools like StackProf or Vernier) is like wearing a heart rate monitor and oxygen sensor during the marathon. It tells you "Why were we slow at mile 12?" by hooking into every method call.
-
-**Why we avoid Profiling in RailsBenchmarkSuite:**
-1.  **Observer Overhead**: Instrumentation creates massive overhead, skewing the metric to measure the profiler rather than the app.
-2.  **Information Overload**: RailsBenchmarkSuite aims for "Conceptual Compression"—one clear number (e.g., Heft: 150), not a 500-line call tree.
-3.  **Statistical Noise**: Profilers drastically reduce iteration counts, whereas benchmarking runs code thousands of times to find a statistically significant average.
-
-## Credits
-RailsBenchmarkSuite was conceived from the ["Rails 8.1 / 9.0" performance discussion](https://github.com/rails/rails/issues/50451).
-
-- **Concept**: DHH (David Heinemeier Hansson)
-- **Name**: Joe Dupuis
-- **Implementation**: The Rails Community
+* **Benchmarking:** Focuses on macro-throughput—"How many iterations can the hardware handle?" This provides the final Heft Score.
+* **Why no Profiling?** Profiling tools (like `StackProf` or `Vernier`) introduce instrumentation overhead that skews hardware metrics. We aim for "Conceptual Compression"—one clear number to inform infrastructure decisions.
 
 ## 🚀 Installation & Usage
 
 ### Prerequisites
-- Ruby 3.3+ (Recommended)
-- SQLite3
+* **Ruby:** 3.4.1+ (Recommended for latest YJIT/Prism performance)
+* **Database:** SQLite3
 
-### Run the Benchmark
-Clone the repository and run the executable:
+### Standalone Usage
+If you want to test hardware performance without an existing application:
 
 ```bash
-git clone https://github.com/rails/rails_benchmark_suite.git
+git clone https://github.com/overnet/rails_benchmark_suite.git
 cd rails_benchmark_suite
 bundle install
 bin/rails_benchmark_suite
 ```
 
-### Using in a Rails Application
-RailsBenchmarkSuite is "Rails-aware." If you run it inside a Rails project, it will automatically load your environment, allowing you to benchmark against your real database connection or models if you write custom suites.
+### Use within a Rails Application
+Rails Benchmark Suite is "Rails-aware." Adding it to your app allows you to benchmark your specific configuration and custom suites.
 
-1. Add to your `Gemfile`:
-   ```ruby
-   gem "rails_benchmark_suite", path: "path/to/rails_benchmark_suite", group: :development
-   # Or once published:
-   # gem "rails_benchmark_suite", group: :development
-   ```
+Add to your Gemfile:
 
-2. Run via bundle:
-   ```bash
-   bundle exec rails_benchmark_suite
-   ```
-
-   *Note: Use `--skip-rails` to ignore the host application and run isolated.*
-
-### Sample Output
-```text
-== Running Suite: Active Record Heft ==
-Active Record Heft (1 thread)   475.7 i/s
-Active Record Heft (4 threads)  116.4 i/s
-
-== Running Suite: Job Heft ==
-Job Heft (1 thread)             34.7 i/s
-Job Heft (4 threads)            14.1 i/s
-
->>> FINAL HEFT SCORE: 86 <<<
+```ruby
+gem "rails_benchmark_suite", group: :development
 ```
 
-## 🛠 Architecture
-
-RailsBenchmarkSuite is designed with Rails Core standards in mind:
-
-- **Benchmark Engine**: Built on `benchmark-ips`.
-- **Database**: Uses **In-Memory SQLite** with `cache=shared` mode to allow truthful multi-threaded benchmarking without disk I/O noise.
-- **Rollback Strategy**: Uses `ActiveRecord::Base.transaction { ... raise Rollback }` to ensure infinite test isolation without the overhead of `DELETE` statements.
-- **Thread Safety**: Explicit connection pooling (`with_connection`) ensures thread-safe execution across scaling tests.
-
-## 🧪 Development
-
-Run the test suite to verify internal logic:
+Run via bundle:
 
 ```bash
-rake test
+bundle exec rails_benchmark_suite
 ```
 
-## License
-MIT.
+> **Note:** Use `--skip-rails` to ignore the host application and run in isolated mode.
+
+## 🏗 Architecture
+* **Engine:** Built on `benchmark-ips`.
+* **Database:** Uses In-Memory SQLite with `cache=shared` for multi-threaded accuracy.
+* **Isolation:** Uses transactional rollbacks (`ActiveRecord::Rollback`) to ensure test isolation without the overhead of row deletion.
+* **Threading:** Supports 1-thread and 4-thread scaling tests to measure vertical efficiency.
+* **Modern Stack:** Optimized for Rails 8+ defaults, including Solid Queue simulation and YJIT detection.
+
+## 📜 Credits
+This project is a functional implementation of the performance benchmark vision discussed in the Rails community.
+
+* **Vision:** Inspired by @dhh in [rails/rails#50451](https://github.com/rails/rails/issues/50451).
+* **Initial Roadmap:** Based on suggestions by @JoeDupuis.
+* **Implementation:** The Rails Community.
+
+## 📄 License
+The gem is available as open source under the terms of the MIT License.
