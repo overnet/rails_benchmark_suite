@@ -17,10 +17,10 @@ module RailsBenchmarkSuite
     SETUP_MUTEX = Mutex.new
 
     def run
-      # Zero-Config Isolation: Simple in-memory database (v0.2.7)
+      # Hardened Isolation: Shared Cache URI for multi-threading (v0.2.7)
       ActiveRecord::Base.establish_connection(
         adapter: "sqlite3",
-        database: ":memory:",
+        database: "file:heft_db?mode=memory&cache=shared",
         pool: 16,
         timeout: 10000
       )
