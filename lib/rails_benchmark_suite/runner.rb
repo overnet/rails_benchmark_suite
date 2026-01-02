@@ -97,10 +97,10 @@ module RailsBenchmarkSuite
 
     def system_report
       info = RailsBenchmarkSuite::Reporter.system_info
-      yjit_status = if defined?(RubyVM::YJIT)
-        RubyVM::YJIT.enabled? ? "Enabled" : "Disabled"
+      yjit_status = if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+        "Enabled"
       else
-        "Not supported by this Ruby binary"
+        "Disabled (Requires Ruby with YJIT support for best results)"
       end
       "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{yjit_status}. Libvips: #{info[:libvips]}"
     end

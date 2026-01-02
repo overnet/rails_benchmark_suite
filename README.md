@@ -88,6 +88,27 @@ ruby --yjit -S bundle exec rails_benchmark_suite --json
 
 > **Note:** Use `--skip-rails` to ignore the host application and run in isolated mode.
 
+## Troubleshooting
+
+### YJIT Shows "Disabled"
+
+If you see `YJIT: Disabled (Requires Ruby with YJIT support for best results)`, it means your Ruby was not compiled with YJIT support. To get the best performance:
+
+1. Ensure `rustc` (Rust compiler) is installed on your system
+2. Reinstall Ruby with YJIT support:
+   ```bash
+   # Using rbenv
+   RUBY_CONFIGURE_OPTS="--enable-yjit" rbenv install 3.4.1
+   
+   # Using rvm
+   rvm install 3.4.1 --enable-yjit
+   ```
+3. Verify YJIT is available: `ruby --yjit -e "puts RubyVM::YJIT.enabled?"`
+
+### SQLite Lock Errors
+
+If you encounter `SQLite3::BusyException` or lock errors, ensure you're running the latest version of the gem (v0.2.7+) which includes automatic retry logic and optimized busy timeouts.
+
 ## 🏗 Architecture
 * **Engine:** Built on `benchmark-ips`.
 * **Database:** Uses In-Memory SQLite with `cache=shared` for multi-threaded accuracy.
