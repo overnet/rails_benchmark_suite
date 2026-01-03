@@ -92,7 +92,6 @@ Perfect for CI/CD pipelines and programmatic analysis. Outputs clean JSON withou
 ### Additional Options
 - `--skip-rails`: Run in isolated mode without loading Rails environment
 - `--version`: Display gem version
-- `--help`: Show all available options
 
 ### Standalone Usage
 
