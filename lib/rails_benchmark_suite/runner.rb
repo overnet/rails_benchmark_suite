@@ -8,48 +8,17 @@ module RailsBenchmarkSuite
     end
 
     def run
-      # Setup database
-      db = DatabaseManager.new
-      db.setup
-
-      # Display header (unless JSON mode)
+      DatabaseManager.new.setup
       Formatter.header(Reporter.system_info) unless @json_output
-
-      # Execute all workloads
-      results = []
-      @workloads.each_with_index do |workload, index|
-        # Show progress
-        Formatter.render_progress(index + 1, @workloads.size, workload[:name], "Running") unless @json_output
-        
-        # Execute workload
-        runner = WorkloadRunner.new(workload)
-        data = runner.execute
-        results << data
-        
-        # Mark complete
-        Formatter.render_progress(index + 1, @workloads.size, workload[:name], "Done ✓") unless @json_output
-      end
-
-      # Render output
+      
+      # Delegate ALL math and execution to the WorkloadRunner
+      payload = WorkloadRunner.new(@workloads, show_progress: !@json_output).execute
+      
       if @json_output
-        Formatter.as_json(results)
+        Formatter.as_json(payload)
       else
-        Formatter.render_summary_table(results)
+        Formatter.summary_with_insights(payload)
       end
-
-      results
-    end
-
-    private
-
-    def system_report
-      info = RailsBenchmarkSuite::Reporter.system_info
-      yjit_status = if defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
-        "Enabled"
-      else
-        "Disabled (Requires Ruby with YJIT support for best results)"
-      end
-      "System: Ruby #{info[:ruby_version]} (#{info[:platform]}), #{info[:processors]} Cores. YJIT: #{yjit_status}. Libvips: #{info[:libvips]}"
     end
   end
 end

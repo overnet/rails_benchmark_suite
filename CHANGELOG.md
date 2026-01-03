@@ -1,26 +1,29 @@
 # Changelog
 
-## [0.3.0] - 2026-01-03
+## [0.3.0] - 2025-01-03
 
-### 🏗️ Architecture
-- **Major Refactor**: Split monolithic Runner (260+ lines) into three focused modules following SRP:
-  - `DatabaseManager`: Handles all ActiveRecord connection, schema loading, and PRAGMA optimizations
-  - `WorkloadRunner`: Executes benchmarks with threading and retry logic
-  - `Formatter`: Manages all UI rendering, ANSI colors, and output formatting
-- **Runner Transformation**: Reduced to ~50 lines as a thin coordinator that delegates to specialized modules
-- **Breaking**: Renamed "Suite" → "Workload" throughout codebase for clearer terminology
-- Reorganized directory structure: `lib/rails_benchmark_suite/suites/` → `lib/rails_benchmark_suite/workloads/`
-- Updated API: `register_suite` → `register_workload`
+### Major Architectural Refactor (SRP)
+- **Runner Split**: Dismantled the monolithic `Runner` class (260+ lines) into three specialized modules:
+  - `DatabaseManager`: Handles ActiveRecord connection, schema loading, and SQLite PRAGMA optimizations
+  - `WorkloadRunner`: Manages benchmark execution engine with BASE_WEIGHTS normalization and complete payload generation
+  - `Formatter`: Centralized UI rendering, ANSI colors, insights engine, and output formatting
+- **Runner Coordinator**: `Runner` is now a minimal 23-line coordinator delegating to the three modules
 
-### 🚀 Features & UX
-- **Rails Heft Index (RHI)**: Introduced official scoring terminology and branding
-- **Hardware Tier Classification**: Automatic tier assignment (Entry/Dev, Production-Ready, High-Performance)
-- **Enterprise Box UI**: Professional report design with UTF-8 box drawing characters (┌─┐ and ╔═╗)
-- **Colorized Scaling Metrics**: Red/Yellow/Green ANSI color indicators for multi-threading efficiency  
-  - Red: < 0.3x (Poor scaling)
-  - Yellow: 0.3x-0.6x (Moderate scaling)
-  - Green: > 0.6x (Good scaling)
-- **Progress Indicators**: Real-time `[1/5] Running... Done ✓` feedback for each workload
+### Normalized RHI Math Engine
+- **BASE_WEIGHTS**: Defined workload weights (Active Record: 0.4, View: 0.2, Solid Queue: 0.2, Cache: 0.1, Image: 0.1)
+- **Dynamic Weight Redistribution**: When workloads are skipped (e.g., missing libvips), weights are normalized proportionally to maintain 100% scale
+- **Formula**: `RHI Score = Σ (4T_IPS × Adjusted_Weight)` where adjusted weights always sum to 1.0
+
+### Performance Insights Engine
+- **Scaling Analysis**: Warns when multi-threading scaling < 0.8x, indicating SQLite lock contention or Ruby GIL saturation
+- **YJIT Detection**: Displays hint to enable YJIT when disabled (typical 15-25% boost)
+- **Memory Monitoring**: Alerts when workload memory growth exceeds 20MB, suggesting heavy object allocation
+- **Hardware Tiering**: Provides comparison labels (Entry/Dev < 50, Production-Ready 50-200, High-Performance > 200)
+
+### UI/UX Enhancements
+- **Box Alignment**: Fixed header and final score boxes with proper text length calculation (60-char width)
+- **Table Spacing**: Added separator line between progress logs and results table for better readability
+- **Insights Display**: Integrated insights below summary table with emoji indicators (💡, 📊)
 - **Enhanced Number Formatting**: Smart k/M suffixes for readability (e.g., "15.3k", "1.2M")
 - **YJIT Hints**: Helpful reminder `(run with RUBY_OPT="--yjit" for max perf)` when YJIT is disabled
 - Silent migrations: Added `ActiveRecord::Migration.verbose = false` to reduce noise

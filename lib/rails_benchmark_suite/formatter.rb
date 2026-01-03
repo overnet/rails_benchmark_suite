@@ -46,8 +46,10 @@ module RailsBenchmarkSuite
       end
     end
 
-    def render_summary_table(results)
-      total_score = 0
+    def summary_with_insights(payload)
+      results = payload[:results]
+      total_score = payload[:total_score]
+      tier = payload[:tier]
       
       # Add spacing and separator before table
       puts "\n"
@@ -58,6 +60,7 @@ module RailsBenchmarkSuite
       printf "#{BOLD}%-28s %10s %10s %10s %7s#{RESET}\n", "Workload", "1T IPS", "4T IPS", "Scaling", "Weight"
       puts "─" * 72
       
+      # Table rows
       results.each do |data|
         report = data[:report]
         entries = report.entries
@@ -69,7 +72,6 @@ module RailsBenchmarkSuite
         ips_4t = entry_4t ? entry_4t.ips : 0
         
         scaling = ips_1t > 0 ? (ips_4t / ips_1t) : 0
-        weight = data[:weight] || 1.0
         
         # Color scaling based on performance
         scaling_color = if scaling >= 0.6
@@ -80,22 +82,70 @@ module RailsBenchmarkSuite
           RED
         end
         
-        # Heft Score: Weighted Sum of 4t IPS
-        weighted_score = ips_4t * weight
-        total_score += weighted_score
-        
         printf "%-28s %10s %10s #{scaling_color}%9.2fx#{RESET} %7.1f\n",
           data[:name],
           humanize(ips_1t),
           humanize(ips_4t),
           scaling,
-          weight
+          data[:adjusted_weight]
       end
       
-      puts "─" * 72
-      puts ""
+      # Display insights
+      check_scaling_insights(results)
+      check_yjit_insight
+      check_memory_insights(results)
       
+      # Display final score
       render_final_score(total_score)
+      
+      # Display tier comparison
+      show_hardware_tier(tier)
+    end
+
+    def check_scaling_insights(results)
+      #Extract scaling from results
+      poor_scaling = results.select do |r|
+        entries = r[:report].entries
+        entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
+        entry_4t = entries.find { |e| e.label.include?("(4 threads)") }
+        ips_1t = entry_1t ? entry_1t.ips : 0
+        ips_4t = entry_4t ? entry_4t.ips : 0
+        scaling = ips_1t > 0 ? (ips_4t / ips_1t) : 0
+        scaling < 0.8
+      end
+      
+      if poor_scaling.any?
+        puts "\n💡 Insight (Scaling): Scaling below 1.0x detected."
+        puts "   This indicates SQLite lock contention or Ruby GIL saturation."
+      end
+    end
+
+    def check_yjit_insight
+      unless defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
+        puts "\n💡 Insight (YJIT): YJIT is OFF."
+        puts "   Run with RUBY_OPT=\"--yjit\" for ~20% boost."
+      end
+    end
+
+    def check_memory_insights(results)
+      high_memory = results.select { |r| r[:memory_delta_mb] > 20 }
+      high_memory.each do |r|
+        puts "\n💡 Insight (Memory): High growth in #{r[:name]} (#{r[:memory_delta_mb].round(1)}MB)"
+        puts "   Suggests heavy object allocation."
+      end
+    end
+
+    def show_hardware_tier(tier)
+      comparison = case tier
+      when "Entry/Dev"
+        "📊 Performance Tier: Entry-Level (Suitable for dev/testing, may struggle with high production traffic)"
+      when "Production-Ready"
+        "📊 Performance Tier: Professional-Grade (Matches the throughput of dedicated production cloud instances)"
+      else
+        "📊 Performance Tier: High-Performance (Exceptional throughput, comparable to bare-metal or high-end workstations)"
+      end
+      
+      puts "\n#{comparison}\n"
     end
 
     def render_final_score(score)
@@ -114,37 +164,31 @@ module RailsBenchmarkSuite
       puts ""
     end
 
-    def as_json(results)
+    def as_json(payload)
       out = {
         system: RailsBenchmarkSuite::Reporter.system_info,
-        total_score: 0,
+        total_score: payload[:total_score].round(0),
+        tier: payload[:tier],
         workloads: []
       }
       
-      total_score = 0
-      
-      results.each do |data|
-        weight = data[:weight] || 1.0
-        
-        # Parse reports
-        ips_1t = data[:report].entries.find { |e| e.label.include?("(1 thread)") }&.ips || 0
-        ips_4t = data[:report].entries.find { |e| e.label.include?("(4 threads)") }&.ips || 0
-        
-        weighted_score = ips_4t * weight
-        total_score += weighted_score
+      payload[:results].each do |data|
+        entries = data[:report].entries
+        entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
+        entry_4t = entries.find { |e| e.label.include?("(4 threads)") }
+        ips_1t = entry_1t ? entry_1t.ips : 0
+        ips_4t = entry_4t ? entry_4t.ips : 0
         
         out[:workloads] << {
           name: data[:name],
-          weight: weight,
+          adjusted_weight: data[:adjusted_weight],
           ips_1t: ips_1t,
           ips_4t: ips_4t,
           scaling: ips_1t > 0 ? (ips_4t / ips_1t) : 0,
-          memory_delta_mb: data[:memory_delta_mb],
-          score: weighted_score
+          memory_delta_mb: data[:memory_delta_mb]
         }
       end
       
-      out[:total_score] = total_score.round(0)
       puts out.to_json
     end
 
