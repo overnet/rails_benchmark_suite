@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["RailsBenchmarkSuite Contributors"]
   spec.email         = ["team@rails.org"]
 
-  spec.summary       = "Rails-style functionality & performance benchmark tool"
-  spec.description   = "Measures the 'Heft' (processing power) of a machine using realistic Rails workloads."
+  spec.summary       = "Rails Heft Index (RHI) - Hardware benchmarking using realistic workloads"
+  spec.description   = "Measures the Rails Heft Index (RHI), a weighted performance score based on realistic Rails 8+ workloads across Active Record, caching, views, jobs, and image processing."
   spec.homepage      = "https://github.com/overnet/rails_benchmark_suite"
   spec.license       = "MIT"
 
@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 2.5"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "ostruct", "~> 0.6"
 
   spec.required_ruby_version = ">= 3.4.0"
 end

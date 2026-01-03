@@ -11,7 +11,7 @@ begin
   SAMPLE_IMAGE = File.join(ASSET_DIR, "sample.jpg")
 
   # Only register if vips is actually available
-  RailsBenchmarkSuite.register_suite("Image Heft", weight: 0.1) do
+  RailsBenchmarkSuite.register_workload("Image Heft", weight: 0.1) do
     # Gracefully handle missing dependencies
     if File.exist?(SAMPLE_IMAGE)
       ImageProcessing::Vips
@@ -25,7 +25,6 @@ begin
   end
 
 rescue LoadError, StandardError
-  # Don't register the suite at all if vips is unavailable
-  puts "⚠️  Skipping Image Heft: libvips not available. Install with: brew install vips (macOS)"
+  # Don't register the workload at all if vips is unavailable
+  puts "⚠️  Skipping Image Workload: libvips not available. Install with: 'brew install vips' (macOS) or 'sudo apt install libvips-dev' (Linux)"
 end
-

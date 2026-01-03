@@ -2,8 +2,8 @@
 
 require "active_record"
 
-# Benchmark Suite
-RailsBenchmarkSuite.register_suite("Active Record Heft", weight: 0.4) do
+# Benchmark Workload
+RailsBenchmarkSuite.register_workload("Active Record Heft", weight: 0.4) do
   # Workload: Create User with Posts, Join Query, Update
   # Use transaction rollback to keep the DB clean and avoid costly destroy callbacks
   ActiveRecord::Base.transaction do

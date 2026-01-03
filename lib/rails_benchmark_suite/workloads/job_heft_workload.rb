@@ -4,7 +4,7 @@ require "active_record"
 require "json"
 
 
-RailsBenchmarkSuite.register_suite("Solid Queue Heft", weight: 0.2) do
+RailsBenchmarkSuite.register_workload("Solid Queue Heft", weight: 0.2) do
   # Simulation: Enqueue 100 jobs, then work them off
   
   # 1. Enqueue Loop

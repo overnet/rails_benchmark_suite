@@ -3,6 +3,9 @@
 require "concurrent"
 require "rails_benchmark_suite/version"
 require "rails_benchmark_suite/reporter"
+require "rails_benchmark_suite/database_manager"
+require "rails_benchmark_suite/workload_runner"
+require "rails_benchmark_suite/formatter"
 require "rails_benchmark_suite/runner"
 require "rails_benchmark_suite/db_setup"
 require "rails_benchmark_suite/schema"
@@ -11,17 +14,17 @@ require "rails_benchmark_suite/models/post"
 require "rails_benchmark_suite/models/simulated_job"
 
 module RailsBenchmarkSuite
-  @suites = []
+  @workloads = []
 
-  def self.register_suite(name, weight: 1.0, &block)
-    @suites << { name: name, weight: weight, block: block }
+  def self.register_workload(name, weight: 1.0, &block)
+    @workloads << { name: name, weight: weight, block: block }
   end
 
   def self.run(json: false)
-    # Load suites
-    Dir[File.join(__dir__, "rails_benchmark_suite", "suites", "*.rb")].each { |f| require f }
+    # Load workloads
+    Dir[File.join(__dir__, "rails_benchmark_suite", "workloads", "*.rb")].each { |f| require f }
     
-    runner = Runner.new(@suites, json: json)
+    runner = Runner.new(@workloads, json: json)
     runner.run
   end
 end

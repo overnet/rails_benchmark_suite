@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rails_benchmark_suite (0.2.6)
+    rails_benchmark_suite (0.3.0)
       actionview (~> 8.1)
       activerecord (~> 8.1)
       activestorage (~> 8.1)
@@ -116,6 +116,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.19.0-x86_64-linux-musl)
       racc (~> 1.4)
+    ostruct (0.6.3)
     racc (1.8.1)
     rack (3.2.4)
     rack-session (2.1.1)
@@ -166,6 +167,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 2.5)
   minitest (~> 5.0)
+  ostruct (~> 0.6)
   rails_benchmark_suite!
   rake (~> 13.0)
 

@@ -3,17 +3,17 @@
 require "action_view"
 require "ostruct"
 
-# Benchmark Suite
+# Benchmark Workload
 
 
-# Helper for the suite
+# Helper for the workload
 module RailsBenchmarkSuiteNumberHelper
   def self.number_with_delimiter(number)
     number.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1,")
   end
 end
 
-  RailsBenchmarkSuite.register_suite("View Heft", weight: 0.2) do
+  RailsBenchmarkSuite.register_workload("View Heft", weight: 0.2) do
     # Setup context once
     @view_renderer ||= begin
       lookup_context = ActionView::LookupContext.new([File.expand_path(__dir__)])

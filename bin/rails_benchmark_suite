@@ -29,20 +29,24 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
+unless options[:json]
+  puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
+end
 
 # Rails Detection
 rails_env_path = File.join(Dir.pwd, "config", "environment.rb")
 
 if !options[:skip_rails] && File.exist?(rails_env_path)
-  puts "Rails environment detected at #{rails_env_path}. Loading..."
+  puts "Rails environment detected at #{rails_env_path}. Loading..." unless options[:json]
   require rails_env_path
-  puts "Rails loaded successfully."
+  puts "Rails loaded successfully." unless options[:json]
 else
-  if options[:skip_rails]
-    puts "Skipping Rails loading (requested via --skip-rails)."
-  else
-    puts "No Rails environment detected (config/environment.rb not found)."
+  unless options[:json]
+    if options[:skip_rails]
+      puts "Skipping Rails loading (requested via --skip-rails)."
+    else
+      puts "No Rails environment detected (config/environment.rb not found)."
+    end
   end
 end
 
