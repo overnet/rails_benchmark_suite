@@ -17,7 +17,7 @@ module RailsBenchmarkSuite
     SETUP_MUTEX = Mutex.new
 
     def run
-      # Ultimate Hardening: Massive pool and timeout for zero lock contention (v0.2.8)
+      # Ultimate Hardening: Massive pool and timeout for zero lock contention (v0.2.9)
       ActiveRecord::Base.establish_connection(
         adapter: "sqlite3",
         database: "file:heft_db?mode=memory&cache=shared",
