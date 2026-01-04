@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rails Benchmark Suite Report</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js 4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; }
+        .table-dark { --bs-table-bg: #1e1e1e; --bs-table-striped-bg: #252525; }
+        .efficiency-high { color: #4caf50; font-weight: bold; }
+        .efficiency-med { color: #ffc107; font-weight: bold; }
+        .efficiency-low { color: #f44336; font-weight: bold; }
+        .header-bar { border-bottom: 2px solid #3d3d3d; padding-bottom: 20px; margin-bottom: 30px; }
+    </style>
+</head>
+<body class="container py-5">
+
+    <!-- Header -->
+    <div class="header-bar d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="display-5 fw-bold text-light">Rails Benchmark Suite</h1>
+            <p class="text-secondary mb-0">v<%= RailsBenchmarkSuite::VERSION %> Report</p>
+        </div>
+        <div class="text-end text-white-50">
+            <div>Ruby <%= RUBY_VERSION %></div>
+            <div><%= @payload[:threads] %> Threads</div>
+            <div><%= Time.now.strftime("%Y-%m-%d %H:%M") %></div>
+        </div>
+    </div>
+
+    <!-- Score Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card h-100 p-4 text-center">
+                <h3 class="text-secondary">RHI Score</h3>
+                <div class="display-1 fw-bold <%= @payload[:total_score] > 200 ? 'text-primary' : 'text-light' %>">
+                    <%= @payload[:total_score].to_i %>
+                </div>
+                <div class="badge bg-dark border mt-2"><%= @payload[:tier] %> Tier</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100 p-4 text-center">
+                <h3 class="text-secondary">Avg. Efficiency</h3>
+                <% 
+                   total_eff = @payload[:results].sum do |r| 
+                     entry_1t = r[:report].entries.find { |e| e.label.include?("(1 thread)") }
+                     entry_mt = r[:report].entries.find { |e| e.label.match?(/\(\d+ threads\)/) }
+                     next 0 unless entry_1t && entry_mt
+                     (entry_mt.ips / (entry_1t.ips * @payload[:threads])) * 100
+                   end 
+                   avg_eff = total_eff / [@payload[:results].size, 1].max
+                   color_class = avg_eff > 75 ? 'efficiency-high' : (avg_eff > 50 ? 'efficiency-med' : 'efficiency-low')
+                %>
+                <div class="display-1 <%= color_class %>">
+                    <%= avg_eff.round(1) %>%
+                </div>
+                <small class="text-muted">Target: > 80% linear scaling</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card mb-5">
+        <div class="card-header bg-transparent border-bottom border-secondary">
+            <h5 class="mb-0">Scaling Curve (1T vs MaxT)</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="scalingChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="card">
+        <div class="card-header bg-transparent border-bottom border-secondary">
+            <h5 class="mb-0">Detailed Metrics</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 30%">Workload</th>
+                        <th class="text-end">1T IPS</th>
+                        <th class="text-end">MaxT IPS</th>
+                        <th class="text-end">Scaling (x)</th>
+                        <th class="text-end">Efficiency</th>
+                        <th class="text-end">Weight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% @payload[:results].each do |res| %>
+                        <% 
+                           entry_1t = res[:report].entries.find { |e| e.label.include?("(1 thread)") }
+                           entry_mt = res[:report].entries.find { |e| e.label.match?(/\(\d+ threads\)/) }
+                           ips_1t = entry_1t ? entry_1t.ips : 0
+                           ips_mt = entry_mt ? entry_mt.ips : 0
+                           
+                           scaling = ips_1t > 0 ? (ips_mt / ips_1t) : 0
+                           efficiency = (ips_1t.to_f > 0) ? (ips_mt.to_f / (ips_1t * @payload[:threads])) * 100 : 0.0
+                           
+                           eff_color = efficiency > 75 ? 'efficiency-high' : (efficiency > 50 ? 'efficiency-med' : 'efficiency-low')
+                           scale_color = scaling >= 1.0 ? 'text-success' : 'text-danger'
+                        %>
+                        <tr>
+                            <td class="fw-medium"><%= res[:name] %></td>
+                            <td class="text-end font-monospace"><%= ips_1t.round(1) %></td>
+                            <td class="text-end font-monospace"><%= ips_mt.round(1) %></td>
+                            <td class="text-end font-monospace <%= scale_color %>"><%= "%.2fx" % scaling %></td>
+                            <td class="text-end font-monospace <%= eff_color %>"><%= efficiency.round(1) %>%</td>
+                            <td class="text-end text-secondary"><%= res[:adjusted_weight].round(2) %></td>
+                        </tr>
+                    <% end %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- JavaScript Injection -->
+    <script>
+        const CHART_DATA = <%= @chart_payload %>;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('scalingChart');
+            
+            // Data is already prepared in Ruby
+            const labels = CHART_DATA.labels;
+            const data1T = CHART_DATA.data_1t;
+            const dataMaxT = CHART_DATA.data_mt;
+
+            // Color logic for MaxT bars (Red if bad scaling)
+            const backgroundColors = dataMaxT.map((val, index) => {
+                const ips1 = data1T[index];
+                const scaling = ips1 > 0 ? val / ips1 : 0;
+                return scaling < 0.8 ? 'rgba(239, 83, 80, 0.8)' : 'rgba(156, 39, 176, 0.8)';
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '1-Thread IPS',
+                            data: data1T,
+                            backgroundColor: 'rgba(33, 150, 243, 0.8)',
+                            borderColor: 'rgba(33, 150, 243, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '<%= @payload[:threads] %>-Thread IPS',
+                            data: dataMaxT,
+                            backgroundColor: backgroundColors,
+                            borderColor: backgroundColors.map(c => c.replace('0.8)', '1)')),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#333' },
+                            ticks: { color: '#aaa' },
+                            title: { display: true, text: 'Iterations Per Second (IPS)', color: '#aaa' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#fff' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

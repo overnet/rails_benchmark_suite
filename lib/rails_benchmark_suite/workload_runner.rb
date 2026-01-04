@@ -2,6 +2,7 @@
 
 require "benchmark/ips"
 require "get_process_mem"
+require "tty-spinner"
 
 module RailsBenchmarkSuite
   class WorkloadRunner
@@ -14,22 +15,41 @@ module RailsBenchmarkSuite
       "Image Heft" => 0.1
     }.freeze
 
-    def initialize(workloads, show_progress: true)
+    def initialize(workloads, options: {}, show_progress: true)
       @workloads = workloads
+      @options = options
+      @threads = options[:threads] || 4
+      @profile_mode = options[:profile] || false
       @show_progress = show_progress
     end
 
     def execute
+      if @profile_mode && @show_progress
+        puts "\nRunning Scaling Diagnostic (Profile Mode)..."
+      elsif @show_progress
+        puts "\n⏳ Running Benchmarks..."
+      end
+
+      # Initializing MultiSpinner if progress is enabled
+      multi_spinner = TTY::Spinner::Multi.new("[:spinner] Running Workloads", format: :dots) if @show_progress
+
       # Run all workloads and collect results
-      results = @workloads.map.with_index do |w, index|
+      results = @workloads.map do |w|
+        spinner = nil
         if @show_progress
-          Formatter.render_progress(index + 1, @workloads.size, w[:name], "Running")
+          spinner = multi_spinner.register("[:spinner] #{w[:name]}", format: :dots)
+          spinner.auto_spin
         end
         
-        result = run_single_workload(w)
+        result = run_single_workload(w, spinner)
         
-        if @show_progress
-          Formatter.render_progress(index + 1, @workloads.size, w[:name], "Done ✓")
+        if @show_progress && spinner
+          ips_1t = result[:report].entries.find { |e| e.label.include?("(1 thread)") }&.ips || 0
+          ips_mt = result[:report].entries.find { |e| e.label.include?("(#{@threads} threads)") }&.ips || 0
+          
+          # Dynamic Success Message without duplicate name
+          success_msg = " ... #{Reporter.humanize(ips_1t)} IPS (1T) | #{Reporter.humanize(ips_mt)} IPS (#{@threads}T)"
+          spinner.success(success_msg)
         end
         
         result
@@ -46,9 +66,9 @@ module RailsBenchmarkSuite
       # Calculate total score
       total_score = results.sum do |r|
         entries = r[:report].entries
-        entry_4t = entries.find { |e| e.label.include?("(4 threads)") }
-        ips_4t = entry_4t ? entry_4t.ips : 0
-        ips_4t * r[:adjusted_weight]
+        entry_mt = entries.find { |e| e.label.include?("(#{@threads} threads)") }
+        ips_mt = entry_mt ? entry_mt.ips : 0
+        ips_mt * r[:adjusted_weight]
       end
       
       # Determine tier
@@ -64,27 +84,30 @@ module RailsBenchmarkSuite
       {
         results: results,
         total_score: total_score,
-        tier: tier
+        tier: tier,
+        threads: @threads,
+        profile_mode: @profile_mode
       }
     end
 
     private
 
-    def run_single_workload(workload)
+    def run_single_workload(workload, spinner)
       mem_before = GetProcessMem.new.mb
 
       # Run benchmark
       report = Benchmark.ips do |x|
-        x.config(:time => 5, :warmup => 2)
+        # Silence output to allow spinner to own the UI
+        x.config(:time => 5, :warmup => 2, :quiet => true)
         
         # Single Threaded
         x.report("#{workload[:name]} (1 thread)") do
           with_retries { workload[:block].call }
         end
 
-        # Multi Threaded (4 threads)
-        x.report("#{workload[:name]} (4 threads)") do
-          threads = 4.times.map do
+        # Multi Threaded
+        x.report("#{workload[:name]} (#{@threads} threads)") do
+          threads = @threads.times.map do
             Thread.new do
               ActiveRecord::Base.connection_pool.with_connection do
                 with_retries { workload[:block].call }
@@ -94,15 +117,29 @@ module RailsBenchmarkSuite
           threads.each(&:join)
         end
 
-        x.compare!
+        # x.compare! removed to prevent STDOUT pollution
       end
 
       mem_after = GetProcessMem.new.mb
       
+      # Calculate Scaling Efficiency if in profile mode
+      # Efficiency = (Multi Score / (Single Score * Threads)) * 100
+      entries = report.entries
+      entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
+      entry_mt = entries.find { |e| e.label.include?("(#{@threads} threads)") }
+      
+      efficiency = 0.0
+      if entry_1t && entry_mt && entry_1t.ips > 0
+        single_score = entry_1t.ips
+        multi_score = entry_mt.ips
+        efficiency = (multi_score / (single_score * @threads)) * 100
+      end
+
       {
         name: workload[:name],
         report: report,
-        memory_delta_mb: mem_after - mem_before
+        memory_delta_mb: mem_after - mem_before,
+        efficiency: efficiency
       }
     end
 

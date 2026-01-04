@@ -6,16 +6,16 @@ module RailsBenchmarkSuite
   module Schema
     def self.load
       ActiveRecord::Schema.define do
-        # Users
-        create_table :users, force: true do |t|
+        # BenchmarkUsers
+        create_table :benchmark_users, force: true do |t|
           t.string :name
           t.string :email
           t.timestamps
         end
 
-        # Posts
-        create_table :posts, force: true do |t|
-          t.references :user
+        # BenchmarkPosts
+        create_table :benchmark_posts, force: true do |t|
+          t.references :benchmark_user, foreign_key: { to_table: :benchmark_users }
           t.string :title
           t.text :body
           t.integer :views, default: 0

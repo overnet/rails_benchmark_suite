@@ -1,4 +1,23 @@
 # Changelog
+## [0.3.1] - 2026-01-04
+*Major Architectural Repair & TTY Overhaul*
+
+### Added
+- **--html**: Static HTML Reporter with Chart.js visualization.
+- **--profile**: Automated "Scaling Efficiency" calculation (1T vs MaxT).
+- **--db**: Real database integration (Postgres/MySQL support).
+- **Hardware Awareness**: Auto-detection of CPU cores for thread defaults.
+- **UI**: Rich terminal output using `tty-spinner`, `tty-table`, and `tty-box` for a dashboard-style report.
+- **Architecture**: Implemented the standard `lib/dummy` Rails Engine pattern for internal tests.
+
+### Changed
+- **Refactor**: Complete structural overhaul. Moved monolithic logic from `lib/rails_benchmark_suite.rb` into a proper namespace (`lib/rails_benchmark_suite/`).
+- **Concurrency**: Default thread count is now dynamic (`Etc.nprocessors`) instead of hardcoded to 4.
+- **Safety**: Renamed internal test model from `User` to `BenchmarkUser` to prevent collisions when running inside host apps.
+
+### Fixed
+- **CLI**: Fixed the non-functional `--help` flag (now implemented via `OptionParser`).
+- **Reporting**: Restored the "Scaling (x)" column in the final report to correctly visualize performance degradation.
 
 ## [0.3.0] - 2025-01-03
 

@@ -26,6 +26,19 @@ The Heft Score is a weighted metric representing a machine's ability to handle R
 | **150+** | 🚀 High Performance | Apple M-series Pro/Max, Ryzen 5000+ |
 | **300+** | ⚡ Blazing | Server-grade Metal, M3 Ultra |
 
+### 📊 Visual Reports (HTML)
+
+Visualize your threading efficiency and bottlenecks with a self-contained dashboard:
+
+```bash
+bundle exec rails_benchmark_suite -t 8 --html
+```
+
+This generates `rails_benchmark_report.html` containing:
+- **Scaling Curve**: Interactive bar chart comparing 1-thread vs Max-thread throughput.
+- **Efficiency Heatmap**: Score cards identifying which workloads are Gil-bound vs CPU-bound.
+- **Detailed Metrics**: Raw IPS and detailed scaling factors.
+
 ---
 
 ## 🚀 Quick Start
@@ -89,9 +102,34 @@ bundle exec rails_benchmark_suite --json > report.json
 ```
 Perfect for CI/CD pipelines and programmatic analysis. Outputs clean JSON without any UI elements.
 
-### Additional Options
+### 📊 Visual Diagnostics (HTML Report)
+
+![Rails Benchmark Suite Report](docs/images/report_v0_3_1.png)
+
+To diagnose scaling bottlenecks, run the tool in Profile Mode (`--profile`) and generate the HTML Report (`--html`). This compares Single-Thread vs Multi-Thread performance side-by-side.
+
+```bash
+bundle exec rails_benchmark_suite --profile --html
+```
+
+**Opening the Report**:
+- **Local:** `open tmp/rails_benchmark_report.html`
+- **Remote:** `scp user@server:/current/path/tmp/rails_benchmark_report.html .`
+
+### Command Line Options
+
+| Flag | Description |
+| :--- | :--- |
+| `--html` | Generates a visual dashboard (`tmp/rails_benchmark_report.html`). **Best used with `--profile`.** |
+| `--profile` | **Diagnostic Mode.** Runs the benchmark twice (1 Thread vs Max Threads) to calculate "Scaling Efficiency." Required to populate the "Scaling Curve" charts. |
+| `--db` | Uses your local `config/database.yml` (Postgres/MySQL) instead of the synthetic in-memory SQLite. |
+| `-t [N]` | Manually set the thread count (Default: Auto-detects CPU cores). |
+
+### Configuration Flags
+- `--json`: Output results in JSON format
 - `--skip-rails`: Run in isolated mode without loading Rails environment
 - `--version`: Display gem version
+- `-h` / `--help`: Show usage help
 
 ### Standalone Usage
 
