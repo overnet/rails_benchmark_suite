@@ -37,6 +37,10 @@ OptionParser.new do |opts|
     config.json = true
   end
 
+  opts.on("--html", "Generate a visual HTML report (rails_benchmark_report.html)") do
+    config.html = true
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit 0
