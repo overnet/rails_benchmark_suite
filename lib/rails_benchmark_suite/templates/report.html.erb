@@ -102,8 +102,7 @@
                            ips_mt = entry_mt ? entry_mt.ips : 0
                            
                            scaling = ips_1t > 0 ? (ips_mt / ips_1t) : 0
-                           efficiency = (ips_mt / (ips_1t * @payload[:threads])) * 100 if ips_1t > 0
-                           efficiency ||= 0
+                           efficiency = (ips_1t.to_f > 0) ? (ips_mt.to_f / (ips_1t * @payload[:threads])) * 100 : 0.0
                            
                            eff_color = efficiency > 75 ? 'efficiency-high' : (efficiency > 50 ? 'efficiency-med' : 'efficiency-low')
                            scale_color = scaling >= 1.0 ? 'text-success' : 'text-danger'
