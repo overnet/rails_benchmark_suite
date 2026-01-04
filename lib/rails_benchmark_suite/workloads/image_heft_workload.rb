@@ -26,5 +26,5 @@ begin
 
 rescue LoadError, StandardError
   # Don't register the workload at all if vips is unavailable
-  puts "⚠️  Skipping Image Workload: libvips not available. Install with: 'brew install vips' (macOS) or 'sudo apt install libvips-dev' (Linux)"
+  puts "\n⚠️  Skipping Image Workload: libvips not available. Install with: 'brew install vips' (macOS) or 'sudo apt install libvips-dev' (Linux)\n\n"
 end

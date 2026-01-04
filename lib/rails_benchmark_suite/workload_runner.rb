@@ -2,6 +2,7 @@
 
 require "benchmark/ips"
 require "get_process_mem"
+require "tty-spinner"
 
 module RailsBenchmarkSuite
   class WorkloadRunner
@@ -23,20 +24,32 @@ module RailsBenchmarkSuite
     end
 
     def execute
-      if @profile_mode
-        puts "\nRunning Scaling Diagnostic (Profile Mode)..." if @show_progress
+      if @profile_mode && @show_progress
+        puts "\nRunning Scaling Diagnostic (Profile Mode)..."
+      elsif @show_progress
+        puts "\n⏳ Running Benchmarks..."
       end
 
+      # Initializing MultiSpinner if progress is enabled
+      multi_spinner = TTY::Spinner::Multi.new("[:spinner] Running Workloads", format: :dots) if @show_progress
+
       # Run all workloads and collect results
-      results = @workloads.map.with_index do |w, index|
+      results = @workloads.map do |w|
+        spinner = nil
         if @show_progress
-          Formatter.render_progress(index + 1, @workloads.size, w[:name], "Running")
+          spinner = multi_spinner.register("[:spinner] #{w[:name]}", format: :dots)
+          spinner.auto_spin
         end
         
-        result = run_single_workload(w)
+        result = run_single_workload(w, spinner)
         
-        if @show_progress
-          Formatter.render_progress(index + 1, @workloads.size, w[:name], "Done ✓")
+        if @show_progress && spinner
+          ips_1t = result[:report].entries.find { |e| e.label.include?("(1 thread)") }&.ips || 0
+          ips_mt = result[:report].entries.find { |e| e.label.include?("(#{@threads} threads)") }&.ips || 0
+          
+          # Dynamic Success Message without duplicate name
+          success_msg = " ... #{Formatter.humanize(ips_1t)} IPS (1T) | #{Formatter.humanize(ips_mt)} IPS (#{@threads}T)"
+          spinner.success(success_msg)
         end
         
         result
@@ -79,12 +92,13 @@ module RailsBenchmarkSuite
 
     private
 
-    def run_single_workload(workload)
+    def run_single_workload(workload, spinner)
       mem_before = GetProcessMem.new.mb
 
       # Run benchmark
       report = Benchmark.ips do |x|
-        x.config(:time => 5, :warmup => 2)
+        # Silence output to allow spinner to own the UI
+        x.config(:time => 5, :warmup => 2, :quiet => true)
         
         # Single Threaded
         x.report("#{workload[:name]} (1 thread)") do
@@ -103,7 +117,7 @@ module RailsBenchmarkSuite
           threads.each(&:join)
         end
 
-        x.compare!
+        # x.compare! removed to prevent STDOUT pollution
       end
 
       mem_after = GetProcessMem.new.mb

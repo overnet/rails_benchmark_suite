@@ -7,6 +7,13 @@
 - **Real Database Mode**: Added `-d/--db` flag to connect to local `config/database.yml` instead of in-memory SQLite
 - **Help**: Integrated `OptionParser` with auto-generated help (`-h` / `--help`)
 
+### 🎨 TTY Output Overhaul
+- **Dashboard UI**: Completely replaced scrolling text log with a "Heads Up Display" dashboard
+- **Spinners**: Added `tty-spinner` for live progress updates ("Running Active Record... Done")
+- **Rich Tables**: Implemented `tty-table` for the final report with clean borders and auto-padding
+- **Visual Insights**: Use `tty-box` for the final score and `pastel` for color-coded efficiency metrics
+- **Silence**: Suppressed raw `benchmark-ips` output for a cleaner CLI experience
+
 ### 🧠 Core Improvements
 - **Hardware Awareness**: RHI calculation now defaults to utilizing ALL available cores, making it a true measure of total system capability
 - **Efficiency Metric**: Formatter now calculates and displays "Efficiency %" `(Multi_IPS / (Single_IPS * Threads)) * 100`
