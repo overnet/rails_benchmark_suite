@@ -89,9 +89,14 @@ bundle exec rails_benchmark_suite --json > report.json
 ```
 Perfect for CI/CD pipelines and programmatic analysis. Outputs clean JSON without any UI elements.
 
-### Additional Options
+### Configuration Flags
+- `-t` / `--threads N`: Set thread count manually (default: auto-detect cores)
+- `-p` / `--profile`: Enable "Scaling Efficiency" profile mode (compares 1-thread vs N-threads)
+- `-d` / `--db`: Connect to your local `config/database.yml` instead of default in-memory SQLite
+- `--json`: Output results in JSON format
 - `--skip-rails`: Run in isolated mode without loading Rails environment
 - `--version`: Display gem version
+- `-h` / `--help`: Show usage help
 
 ### Standalone Usage
 

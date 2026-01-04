@@ -15,7 +15,7 @@ module RailsBenchmarkSuite
     module_function
 
     def header(info)
-      box_width = 60  # Internal width
+      box_width = 84  # Adjust width for dynamic layout
       
       # Line 1: Simple text
       line1 = "Rails Heft Index (RHI) v0.3.0"
@@ -33,7 +33,13 @@ module RailsBenchmarkSuite
       puts "\n"
       puts "#{BLUE}┌#{'─' * box_width}┐#{RESET}"
       puts "#{BLUE}│#{RESET}  #{BOLD}#{line1}#{RESET}#{' ' * (box_width - 2 - line1.length)}#{BLUE}│#{RESET}"
-      puts "#{BLUE}│#{RESET}  #{line2}#{' ' * (box_width - 2 - line2_plain.length)}#{BLUE}│#{RESET}"
+      # Line 2 will need centering or strict padding
+      # Simple padding for now:
+      padding = box_width - 2 - line2_plain.length
+      # If negative padding (text too long), truncate or just overflow (let's avoid crash)
+      padding = 0 if padding < 0
+      
+      puts "#{BLUE}│#{RESET}  #{line2}#{' ' * padding}#{BLUE}│#{RESET}"
       puts "#{BLUE}└#{'─' * box_width}┘#{RESET}"
       puts ""
     end
@@ -50,15 +56,18 @@ module RailsBenchmarkSuite
       results = payload[:results]
       total_score = payload[:total_score]
       tier = payload[:tier]
+      threads = payload[:threads] || 4
       
       # Add spacing and separator before table
       puts "\n"
-      puts "─" * 72
+      puts "─" * 84
       puts ""
       
-      # Table header
-      printf "#{BOLD}%-28s %10s %10s %10s %7s#{RESET}\n", "Workload", "1T IPS", "4T IPS", "Scaling", "Weight"
-      puts "─" * 72
+      # Table header - Dynamic for thread count
+      mt_label = "#{threads}T IPS"
+      
+      printf "#{BOLD}%-28s %10s %10s %10s %10s %7s#{RESET}\n", "Workload", "1T IPS", mt_label, "Scaling", "Effic %", "Weight"
+      puts "─" * 84
       
       # Table rows
       results.each do |data|
@@ -66,12 +75,14 @@ module RailsBenchmarkSuite
         entries = report.entries
         
         entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
-        entry_4t = entries.find { |e| e.label.include?("(4 threads)") }
+        entry_mt = entries.find { |e| e.label.include?("(#{threads} threads)") }
         
         ips_1t = entry_1t ? entry_1t.ips : 0
-        ips_4t = entry_4t ? entry_4t.ips : 0
+        ips_mt = entry_mt ? entry_mt.ips : 0
         
-        scaling = ips_1t > 0 ? (ips_4t / ips_1t) : 0
+        scaling = ips_1t > 0 ? (ips_mt / ips_1t) : 0
+        efficiency = (ips_mt / (ips_1t * threads)) * 100 if ips_1t > 0 && threads > 0
+        efficiency ||= 0
         
         # Color scaling based on performance
         scaling_color = if scaling >= 0.6
@@ -81,12 +92,22 @@ module RailsBenchmarkSuite
         else
           RED
         end
+
+        # Efficiency color
+        eff_color = if efficiency >= 75
+          GREEN
+        elsif efficiency >= 50
+          YELLOW
+        else
+          RED
+        end
         
-        printf "%-28s %10s %10s #{scaling_color}%9.2fx#{RESET} %7.1f\n",
+        printf "%-28s %10s %10s #{scaling_color}%9.2fx#{RESET} #{eff_color}%9.1f%%#{RESET} %7.1f\n",
           data[:name],
           humanize(ips_1t),
-          humanize(ips_4t),
+          humanize(ips_mt),
           scaling,
+          efficiency,
           data[:adjusted_weight]
       end
       
@@ -107,10 +128,14 @@ module RailsBenchmarkSuite
       poor_scaling = results.select do |r|
         entries = r[:report].entries
         entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
-        entry_4t = entries.find { |e| e.label.include?("(4 threads)") }
+        # Need to dynamically find the multi-thread entry potentially, but for scaling checks,
+        # we can just assume there's a second entry that isn't 1 thread.
+        # Or parse based on regex.
+        entry_mt = entries.find { |e| e.label.match?(/\(\d+ threads\)/) }
+        
         ips_1t = entry_1t ? entry_1t.ips : 0
-        ips_4t = entry_4t ? entry_4t.ips : 0
-        scaling = ips_1t > 0 ? (ips_4t / ips_1t) : 0
+        ips_mt = entry_mt ? entry_mt.ips : 0 # Using generic mt variable name
+        scaling = ips_1t > 0 ? (ips_mt / ips_1t) : 0
         scaling < 0.8
       end
       
@@ -149,7 +174,7 @@ module RailsBenchmarkSuite
     end
 
     def render_final_score(score)
-      box_width = 60  # Same as header
+      box_width = 84  # Adjusted width for wider table
       
       # Build text without colors to measure
       score_text = "RAILS HEFT INDEX (RHI): #{score.round(0)}"
@@ -175,16 +200,20 @@ module RailsBenchmarkSuite
       payload[:results].each do |data|
         entries = data[:report].entries
         entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
-        entry_4t = entries.find { |e| e.label.include?("(4 threads)") }
+        # Attempt to find the multi-thread entry dynamically
+        entry_mt = entries.find { |e| e.label.match?(/\(\d+ threads\)/) }
+        
         ips_1t = entry_1t ? entry_1t.ips : 0
-        ips_4t = entry_4t ? entry_4t.ips : 0
+        ips_mt = entry_mt ? entry_mt.ips : 0
         
         out[:workloads] << {
           name: data[:name],
           adjusted_weight: data[:adjusted_weight],
           ips_1t: ips_1t,
-          ips_4t: ips_4t,
-          scaling: ips_1t > 0 ? (ips_4t / ips_1t) : 0,
+          ips_mt: ips_mt,
+          threads: payload[:threads],
+          scaling: ips_1t > 0 ? (ips_mt / ips_1t) : 0,
+          efficiency: data[:efficiency],
           memory_delta_mb: data[:memory_delta_mb]
         }
       end

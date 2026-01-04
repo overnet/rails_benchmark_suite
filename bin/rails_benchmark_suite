@@ -2,17 +2,35 @@
 # frozen_string_literal: true
 
 require "optparse"
+require "etc"
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "rails_benchmark_suite"
 require "rails_benchmark_suite/version"
 
-options = {}
+options = {
+  threads: Etc.nprocessors,
+  profile: false,
+  db: false
+}
+
 OptionParser.new do |opts|
   opts.banner = "Usage: rails_benchmark_suite [options]"
 
   opts.on("-v", "--version", "Print version") do
     puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
     exit 0
+  end
+
+  opts.on("-t", "--threads N", Integer, "Number of threads (default: auto set to #{Etc.nprocessors} cores)") do |n|
+    options[:threads] = n
+  end
+
+  opts.on("-p", "--profile", "Enable scaling efficiency profile mode") do
+    options[:profile] = true
+  end
+
+  opts.on("-d", "--db", "Use real database from config/database.yml instead of in-memory SQLite") do
+    options[:db] = true
   end
 
   opts.on("--skip-rails", "Skip Rails environment loading") do
@@ -31,6 +49,7 @@ end.parse!
 
 unless options[:json]
   puts "RailsBenchmarkSuite v#{RailsBenchmarkSuite::VERSION}"
+  puts "Configuration: Threads=#{options[:threads]} | Profile=#{options[:profile]} | Local DB=#{options[:db]}"
 end
 
 # Rails Detection
@@ -50,4 +69,4 @@ else
   end
 end
 
-RailsBenchmarkSuite.run(json: options[:json])
+RailsBenchmarkSuite.run(options)

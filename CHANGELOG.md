@@ -1,4 +1,21 @@
 # Changelog
+## [0.3.1] - 2025-01-04
+
+### 🛠️ CLI & Configuration
+- **Dynamic Threading**: Added `-t/--threads` flag to control concurrency (defaults to `Etc.nprocessors` for full hardware utilization)
+- **Scaling Profiler**: Added `-p/--profile` flag to run "Scaling Efficiency" diagnostics (generates "Joe Curve" metrics)
+- **Real Database Mode**: Added `-d/--db` flag to connect to local `config/database.yml` instead of in-memory SQLite
+- **Help**: Integrated `OptionParser` with auto-generated help (`-h` / `--help`)
+
+### 🧠 Core Improvements
+- **Hardware Awareness**: RHI calculation now defaults to utilizing ALL available cores, making it a true measure of total system capability
+- **Efficiency Metric**: Formatter now calculates and displays "Efficiency %" `(Multi_IPS / (Single_IPS * Threads)) * 100`
+- **Dynamic Labels**: Output table adjusts labels (e.g., "8T IPS") based on actual thread count used
+
+### 🧪 Technical
+- Renamed "Scaling" to "Efficiency" in some internal contexts for clarity
+- Added critical unit tests for CLI argument parsing and math logic
+- Refactored `Runner` to propagate configuration options via dependency injection
 
 ## [0.3.0] - 2025-01-03
 

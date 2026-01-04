@@ -20,11 +20,11 @@ module RailsBenchmarkSuite
     @workloads << { name: name, weight: weight, block: block }
   end
 
-  def self.run(json: false)
+  def self.run(options = {})
     # Load workloads
     Dir[File.join(__dir__, "rails_benchmark_suite", "workloads", "*.rb")].each { |f| require f }
     
-    runner = Runner.new(@workloads, json: json)
-    runner.run
+    options[:json] ||= false
+    Runner.new(@workloads, options).run
   end
 end
