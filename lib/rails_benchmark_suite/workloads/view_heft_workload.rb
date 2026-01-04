@@ -6,39 +6,31 @@ require "ostruct"
 # Benchmark Workload
 
 
-# Helper for the workload
+# Helper for the workload - Mixed into ActionView::Base instance automatically by Rails usually, 
+# but here we might need to include it or just rely on standard helpers if ActionView loads them.
+# The template uses number_with_delimiter which is standard.
 module RailsBenchmarkSuiteNumberHelper
-  def self.number_with_delimiter(number)
-    number.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1,")
-  end
+  # No-op or keep provided helper if standard library fails in isolation
 end
 
-  RailsBenchmarkSuite.register_workload("View Heft", weight: 0.2) do
+  RailsBenchmarkSuite::Runner.register_workload("View Heft", weight: 0.2) do
     # Setup context once
     @view_renderer ||= begin
-      lookup_context = ActionView::LookupContext.new([File.expand_path(__dir__)])
+      # Use the "Dummy" app views folder
+      views_path = File.expand_path("../../dummy/app/views", __dir__)
+      lookup_context = ActionView::LookupContext.new([views_path])
       ActionView::Base.with_empty_template_cache.new(lookup_context, {}, nil)
     end
   
-    # Workload: Render a complex ERB template
-    template = <<~ERB
-    <h1>Dashboard for <%= user.name %></h1>
-    <ul>
-      <% posts.each do |post| %>
-        <li>
-          <strong><%= post.title %></strong>
-          <p><%= post.body.truncate(50) %></p>
-          <small>Views: <%= RailsBenchmarkSuiteNumberHelper.number_with_delimiter(post.views) %></small>
-        </li>
-      <% end %>
-    </ul>
-    <footer>Generated at <%= Time.now.to_s %></footer>
-  ERB
+    # Workload: Render template from file
+    # Previously inline, now isolated in lib/dummy/app/views
+
   
   # Dummy Objects
   user = OpenStruct.new(name: "Speedy")
   posts = 100.times.map { |i| OpenStruct.new(title: "Post #{i}", body: "Content " * 10, views: i * 1000) }
 
   # Execution
-  @view_renderer.render(inline: template, locals: { user: user, posts: posts })
+  # Render the namespaced template 'rails_benchmark_suite/heft_view'
+  @view_renderer.render(template: "rails_benchmark_suite/heft_view", locals: { user: user, posts: posts })
 end

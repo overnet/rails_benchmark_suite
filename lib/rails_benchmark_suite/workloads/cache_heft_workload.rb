@@ -4,7 +4,7 @@ require "active_support/cache"
 require "securerandom"
 
 # Benchmark Workload
-RailsBenchmarkSuite.register_workload("Cache Heft", weight: 0.1) do
+RailsBenchmarkSuite::Runner.register_workload("Cache Heft", weight: 0.1) do
   # Simulate SolidCache using MemoryStore
   @cache ||= ActiveSupport::Cache::MemoryStore.new
   

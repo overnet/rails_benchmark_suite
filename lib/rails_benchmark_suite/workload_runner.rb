@@ -48,7 +48,7 @@ module RailsBenchmarkSuite
           ips_mt = result[:report].entries.find { |e| e.label.include?("(#{@threads} threads)") }&.ips || 0
           
           # Dynamic Success Message without duplicate name
-          success_msg = " ... #{Formatter.humanize(ips_1t)} IPS (1T) | #{Formatter.humanize(ips_mt)} IPS (#{@threads}T)"
+          success_msg = " ... #{Reporter.humanize(ips_1t)} IPS (1T) | #{Reporter.humanize(ips_mt)} IPS (#{@threads}T)"
           spinner.success(success_msg)
         end
         

@@ -6,7 +6,7 @@ require "open3"
 class RailsBenchmarkSuiteTest < Minitest::Test
   def setup
     # Reset workloads
-    RailsBenchmarkSuite.instance_variable_set(:@workloads, [])
+    RailsBenchmarkSuite::Runner.instance_variable_set(:@workloads, [])
     # Re-establish basic memory DB for test isolation
     ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
     RailsBenchmarkSuite::Schema.load
@@ -34,17 +34,19 @@ class RailsBenchmarkSuiteTest < Minitest::Test
 
   # Logic Test: Option Passing to Runner
   def test_runner_initialization_options
-    options = { threads: 8, profile: true, db: true }
-    workloads = []
+    config = RailsBenchmarkSuite::Configuration.new
+    config.threads = 8
+    config.profile = true
+    config.db = true
     
     # Mocking behavior via dependency injection or accessing internal state
-    runner = RailsBenchmarkSuite::Runner.new(workloads, options)
+    runner = RailsBenchmarkSuite::Runner.new(config)
     
     # Check if options are stored correctly (white-box testing)
-    stored_options = runner.instance_variable_get(:@options)
-    assert_equal 8, stored_options[:threads]
-    assert_equal true, stored_options[:profile]
-    assert_equal true, stored_options[:db]
+    stored_config = runner.instance_variable_get(:@config)
+    assert_equal 8, stored_config.threads
+    assert_equal true, stored_config.profile
+    assert_equal true, stored_config.db
   end
 
   # CLI Test: Flag Parsing (Bin Script Logic)

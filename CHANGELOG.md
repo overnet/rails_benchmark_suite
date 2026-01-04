@@ -1,28 +1,21 @@
 # Changelog
-## [0.3.1] - 2025-01-04
+## [0.3.1] - 2026-01-04
+*Major Architectural Repair & TTY Overhaul*
 
-### 🛠️ CLI & Configuration
-- **Dynamic Threading**: Added `-t/--threads` flag to control concurrency (defaults to `Etc.nprocessors` for full hardware utilization)
-- **Scaling Profiler**: Added `-p/--profile` flag to run "Scaling Efficiency" diagnostics (generates "Joe Curve" metrics)
-- **Real Database Mode**: Added `-d/--db` flag to connect to local `config/database.yml` instead of in-memory SQLite
-- **Help**: Integrated `OptionParser` with auto-generated help (`-h` / `--help`)
+### Added
+- **CLI**: New command-line interface with flags: `-t/--threads` (set concurrency), `-p/--profile` (run scaling diagnostic), and `-d/--db` (use local database.yml).
+- **Features**: "Scaling Efficiency" metric that compares Single-Thread vs Multi-Thread performance to detect GIL bottlenecks.
+- **UI**: Rich terminal output using `tty-spinner`, `tty-table`, and `tty-box` for a dashboard-style report.
+- **Architecture**: Implemented the standard `lib/dummy` Rails Engine pattern for internal tests.
 
-### 🎨 TTY Output Overhaul
-- **Dashboard UI**: Completely replaced scrolling text log with a "Heads Up Display" dashboard
-- **Spinners**: Added `tty-spinner` for live progress updates ("Running Active Record... Done")
-- **Rich Tables**: Implemented `tty-table` for the final report with clean borders and auto-padding
-- **Visual Insights**: Use `tty-box` for the final score and `pastel` for color-coded efficiency metrics
-- **Silence**: Suppressed raw `benchmark-ips` output for a cleaner CLI experience
+### Changed
+- **Refactor**: Complete structural overhaul. Moved monolithic logic from `lib/rails_benchmark_suite.rb` into a proper namespace (`lib/rails_benchmark_suite/`).
+- **Concurrency**: Default thread count is now dynamic (`Etc.nprocessors`) instead of hardcoded to 4.
+- **Safety**: Renamed internal test model from `User` to `BenchmarkUser` to prevent collisions when running inside host apps.
 
-### 🧠 Core Improvements
-- **Hardware Awareness**: RHI calculation now defaults to utilizing ALL available cores, making it a true measure of total system capability
-- **Efficiency Metric**: Formatter now calculates and displays "Efficiency %" `(Multi_IPS / (Single_IPS * Threads)) * 100`
-- **Dynamic Labels**: Output table adjusts labels (e.g., "8T IPS") based on actual thread count used
-
-### 🧪 Technical
-- Renamed "Scaling" to "Efficiency" in some internal contexts for clarity
-- Added critical unit tests for CLI argument parsing and math logic
-- Refactored `Runner` to propagate configuration options via dependency injection
+### Fixed
+- **CLI**: Fixed the non-functional `--help` flag (now implemented via `OptionParser`).
+- **Reporting**: Restored the "Scaling (x)" column in the final report to correctly visualize performance degradation.
 
 ## [0.3.0] - 2025-01-03
 

@@ -11,7 +11,7 @@ begin
   SAMPLE_IMAGE = File.join(ASSET_DIR, "sample.jpg")
 
   # Only register if vips is actually available
-  RailsBenchmarkSuite.register_workload("Image Heft", weight: 0.1) do
+  RailsBenchmarkSuite::Runner.register_workload("Image Heft", weight: 0.1) do
     # Gracefully handle missing dependencies
     if File.exist?(SAMPLE_IMAGE)
       ImageProcessing::Vips

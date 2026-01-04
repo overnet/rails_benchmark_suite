@@ -3,12 +3,12 @@
 require "active_record"
 
 # Benchmark Workload
-RailsBenchmarkSuite.register_workload("Active Record Heft", weight: 0.4) do
+RailsBenchmarkSuite::Runner.register_workload("Active Record Heft", weight: 0.4) do
   # Workload: Create User with Posts, Join Query, Update
   # Use transaction rollback to keep the DB clean and avoid costly destroy callbacks
   ActiveRecord::Base.transaction do
     # 1. Create - with unique email per thread
-    user = RailsBenchmarkSuite::Models::User.create!(
+    user = RailsBenchmarkSuite::Dummy::BenchmarkUser.create!(
       name: "Benchmark User", 
       email: "test-#{Thread.current.object_id}@example.com"
     )
@@ -20,10 +20,10 @@ RailsBenchmarkSuite.register_workload("Active Record Heft", weight: 0.4) do
     
     # 3. Complex Query (Join + Order)
     # Unloading the relation to force execution
-    RailsBenchmarkSuite::Models::User.joins(:posts)
-                .where(users: { id: user.id })
-                .where("posts.views >= ?", 0)
-                .order("posts.created_at DESC")
+    RailsBenchmarkSuite::Dummy::BenchmarkUser.joins(:posts)
+                .where(benchmark_users: { id: user.id })
+                .where("benchmark_posts.views >= ?", 0)
+                .order("benchmark_posts.created_at DESC")
                 .to_a
     
     # 4. Update

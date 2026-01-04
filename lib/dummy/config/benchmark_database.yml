@@ -1,0 +1,16 @@
+# Dummy DB Config for isolated benchmarking
+test:
+  adapter: sqlite3
+  database: ":memory:"
+  pool: 50
+  timeout: 5000
+
+development:
+  adapter: sqlite3
+  database: "file:dummy_bench.sqlite3?mode=memory&cache=shared"
+  pool: 50
+  timeout: 30000 
+  # High performance settings
+  variables:
+    journal_mode: WAL
+    synchronous: NORMAL
