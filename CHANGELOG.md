@@ -3,8 +3,10 @@
 *Major Architectural Repair & TTY Overhaul*
 
 ### Added
-- **CLI**: New command-line interface with flags: `-t/--threads` (set concurrency), `-p/--profile` (run scaling diagnostic), and `-d/--db` (use local database.yml).
-- **Features**: "Scaling Efficiency" metric that compares Single-Thread vs Multi-Thread performance to detect GIL bottlenecks.
+- **--html**: Static HTML Reporter with Chart.js visualization.
+- **--profile**: Automated "Scaling Efficiency" calculation (1T vs MaxT).
+- **--db**: Real database integration (Postgres/MySQL support).
+- **Hardware Awareness**: Auto-detection of CPU cores for thread defaults.
 - **UI**: Rich terminal output using `tty-spinner`, `tty-table`, and `tty-box` for a dashboard-style report.
 - **Architecture**: Implemented the standard `lib/dummy` Rails Engine pattern for internal tests.
 

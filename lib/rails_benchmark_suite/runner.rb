@@ -56,6 +56,12 @@ module RailsBenchmarkSuite
       else
         Reporter.render(payload)
       end
+
+      # 5. HTML Report Generation
+      if @config.html
+        require_relative "reporters/html_reporter"
+        Reporters::HtmlReporter.new(payload).generate
+      end
     end
   end
 end

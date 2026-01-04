@@ -4,7 +4,7 @@ require "etc"
 
 module RailsBenchmarkSuite
   class Configuration
-    attr_accessor :threads, :profile, :db, :skip_rails, :json
+    attr_accessor :threads, :profile, :db, :skip_rails, :json, :html
 
     def initialize
       @threads = Etc.nprocessors
@@ -12,6 +12,7 @@ module RailsBenchmarkSuite
       @db = false
       @skip_rails = false
       @json = false
+      @html = false
     end
 
     def db_mode
