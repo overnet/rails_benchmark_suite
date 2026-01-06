@@ -61,6 +61,16 @@ module RailsBenchmarkSuite
       results.each do |r|
         base_weight = BASE_WEIGHTS[r[:name]] || 1.0
         r[:adjusted_weight] = base_weight / weight_pool
+
+        # Calculate Efficiency (DRY)
+        entries = r[:report].entries
+        entry_mt = entries.find { |e| e.label.include?("(#{@threads} threads)") }
+        entry_1t = entries.find { |e| e.label.include?("(1 thread)") }
+        
+        ips_mt = entry_mt ? entry_mt.ips : 0
+        ips_1t = entry_1t ? entry_1t.ips : 0
+        
+        r[:efficiency] = (ips_1t > 0) ? (ips_mt / (ips_1t * @threads)) * 100 : 0.0
       end
       
       # Calculate total score

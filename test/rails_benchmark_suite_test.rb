@@ -2,6 +2,7 @@
 
 require "test_helper"
 require "open3"
+require "ostruct"
 
 class RailsBenchmarkSuiteTest < Minitest::Test
   def setup
@@ -60,5 +61,33 @@ class RailsBenchmarkSuiteTest < Minitest::Test
     assert_match(/--threads/, stdout)
     assert_match(/--profile/, stdout)
     assert_match(/--db/, stdout)
+  end
+
+  # Feature Test: HTML Report Generation
+  def test_html_report_generation
+    require "rails_benchmark_suite/reporters/html_reporter"
+    
+    # Mock payload with efficiency
+    payload = { 
+      results: [{ 
+        name: "Test Workload", 
+        report: OpenStruct.new(entries: []), 
+        efficiency: 50.0,
+        adjusted_weight: 1.0
+      }], 
+      total_score: 100, 
+      tier: "Test", 
+      threads: 4 
+    }
+    
+    # Generate
+    RailsBenchmarkSuite::Reporters::HtmlReporter.new(payload).generate
+    
+    # Verify
+    path = Dir.exist?("tmp") ? "tmp/rails_benchmark_report.html" : "rails_benchmark_report.html"
+    assert File.exist?(path)
+    
+    # Teardown
+    File.delete(path)
   end
 end

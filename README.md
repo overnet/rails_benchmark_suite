@@ -120,10 +120,10 @@ bundle exec rails_benchmark_suite --profile --html
 
 | Flag | Description |
 | :--- | :--- |
-| `--html` | Generates a visual dashboard (`tmp/rails_benchmark_report.html`). **Best used with `--profile`.** |
-| `--profile` | **Diagnostic Mode.** Runs the benchmark twice (1 Thread vs Max Threads) to calculate "Scaling Efficiency." Required to populate the "Scaling Curve" charts. |
-| `--db` | Uses your local `config/database.yml` (Postgres/MySQL) instead of the synthetic in-memory SQLite. |
-| `-t [N]` | Manually set the thread count (Default: Auto-detects CPU cores). |
+| `--html` | Generates a visual dashboard (`tmp/rails_benchmark_report.html`).<br>**Best used with `--profile`.** |
+| `--profile` | **Diagnostic Mode.** Runs benchmark twice (1T vs MaxT) to calc efficiency.<br>Required for "Scaling Curve". |
+| `--db` | Connects to local `config/database.yml` (Postgres/MySQL).<br>Bypasses in-memory SQLite. |
+| `-t [N]` | Manually set thread count.<br>(Default: Auto-detects CPU cores). |
 
 ### Configuration Flags
 - `--json`: Output results in JSON format

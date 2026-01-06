@@ -5,6 +5,7 @@ require "tty-table"
 require "tty-box"
 require "pastel"
 require "tty-cursor"
+require "tty-screen"
 
 module RailsBenchmarkSuite
   module Reporter
@@ -42,8 +43,10 @@ module RailsBenchmarkSuite
         "DB: #{info[:db_mode] || 'SQLite (Memory)'} | YJIT: #{yjit_status}#{yjit_hint}"
       ].join("\n")
 
+      box_width = [TTY::Screen.width, 84].min
+
       print TTY::Box.frame(
-        width: 80, 
+        width: box_width, 
         title: { top_left: " Rails Benchmark Suite v#{RailsBenchmarkSuite::VERSION} " },
         padding: 1,
         style: {
@@ -179,8 +182,10 @@ module RailsBenchmarkSuite
       score_str = "#{score.round(0)}"
       puts ""
       
+      box_width = [TTY::Screen.width, 84].min
+
       print TTY::Box.frame(
-        width: 40,
+        width: box_width,
         height: 5,
         align: :center,
         padding: 1,

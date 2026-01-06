@@ -1,4 +1,11 @@
 # Changelog
+## [0.3.2] - 2026-01-05
+### Refactoring & Polish
+- **DRY Logic**: Centralized "Efficiency" calculation; removed duplicate math from HTML templates.
+- **Responsive UI**: Terminal output now adapts to screen width (instead of hardcoded 84 chars).
+- **Tests**: Added unit tests for HTML Reporter generation.
+- **Docs**: Improved formatting of the Command Line Options table.
+
 ## [0.3.1] - 2026-01-04
 *Major Architectural Repair & TTY Overhaul*
 
