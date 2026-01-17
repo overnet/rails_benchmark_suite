@@ -121,6 +121,46 @@
         </div>
     </div>
 
+    <% if @payload[:boot_analysis]&.any? %>
+    <!-- Boot Structure Analysis -->
+    <div class="card mt-5">
+        <div class="card-header bg-transparent border-bottom border-secondary">
+            <h5 class="mb-0">📂 Boot Structure Analysis</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="bootChart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-dark table-striped table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Directory</th>
+                                <th class="text-end">Load Time</th>
+                                <th class="text-end">Files</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% @payload[:boot_analysis].each do |entry| %>
+                                <% 
+                                   time_ms = entry[:time_ms] || 0
+                                   time_class = time_ms > 500 ? 'text-danger' : (time_ms > 200 ? 'text-warning' : 'text-success')
+                                %>
+                                <tr>
+                                    <td class="font-monospace"><%= entry[:path] %></td>
+                                    <td class="text-end font-monospace <%= time_class %>"><%= time_ms.round(0) %>ms</td>
+                                    <td class="text-end text-secondary"><%= entry[:file_count] %></td>
+                                </tr>
+                            <% end %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% end %>
+
     <!-- JavaScript Injection -->
     <script>
         const CHART_DATA = <%= @chart_payload %>;
@@ -181,6 +221,53 @@
                     }
                 }
             });
+
+            <% if @payload[:boot_analysis]&.any? %>
+            // Boot Structure Analysis Chart
+            const bootCtx = document.getElementById('bootChart');
+            const bootLabels = <%= @payload[:boot_analysis].map { |e| e[:path] }.to_json %>;
+            const bootData = <%= @payload[:boot_analysis].map { |e| e[:time_ms] }.to_json %>;
+            
+            const bootColors = bootData.map(ms => {
+                if (ms > 500) return 'rgba(244, 67, 54, 0.8)';
+                if (ms > 200) return 'rgba(255, 193, 7, 0.8)';
+                return 'rgba(76, 175, 80, 0.8)';
+            });
+
+            new Chart(bootCtx, {
+                type: 'bar',
+                data: {
+                    labels: bootLabels,
+                    datasets: [{
+                        label: 'Load Time (ms)',
+                        data: bootData,
+                        backgroundColor: bootColors,
+                        borderColor: bootColors.map(c => c.replace('0.8)', '1)')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#333' },
+                            ticks: { color: '#aaa' },
+                            title: { display: true, text: 'Milliseconds', color: '#aaa' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#fff' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+            <% end %>
         });
     </script>
 </body>

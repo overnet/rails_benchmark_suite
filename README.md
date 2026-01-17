@@ -8,6 +8,10 @@ A standardized performance suite designed to measure the "Heft" of a machine usi
 
 Think of this as a **"Test Track" for Rails servers**. Unlike profilers that measure your specific application code, this gem runs a **fixed, standardized set of Rails operations** (Active Record object allocation, SQL query complexity, ActionView rendering, and background job throughput) to measure the raw performance of your server and Ruby configuration.
 
+**Key Features:**
+- **Auto-Boot Profiler:** Automatically detects which folders in `app/` (Models, Controllers, etc.) are slowing down your startup time.
+- **Isolated Environment:** Uses in-memory SQLite—never touches your production data.
+
 To ensure a level playing field, the gem boots an **isolated, in-memory SQLite environment**. It creates its own schema and records, meaning it **never touches your production data** and returns comparable results across any machine.
 
 ## 📊 The "Heft" Score

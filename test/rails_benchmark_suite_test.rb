@@ -91,6 +91,44 @@ class RailsBenchmarkSuiteTest < Minitest::Test
     File.delete(path)
   end
 
+  # Feature Test: HTML Report with Boot Analysis
+  def test_html_report_includes_boot_analysis
+    require "rails_benchmark_suite/reporters/html_reporter"
+    
+    # Mock payload with boot_analysis
+    payload = { 
+      results: [{ 
+        name: "Test Workload", 
+        report: OpenStruct.new(entries: []), 
+        efficiency: 50.0,
+        adjusted_weight: 1.0
+      }], 
+      total_score: 100, 
+      tier: "Test", 
+      threads: 4,
+      boot_analysis: [
+        { path: "app/models", time_ms: 150.5, file_count: 10 },
+        { path: "app/controllers", time_ms: 85.2, file_count: 5 }
+      ]
+    }
+    
+    # Generate
+    RailsBenchmarkSuite::Reporters::HtmlReporter.new(payload).generate
+    
+    # Verify file exists
+    path = Dir.exist?("tmp") ? "tmp/rails_benchmark_report.html" : "rails_benchmark_report.html"
+    assert File.exist?(path)
+    
+    # Verify boot analysis content
+    content = File.read(path)
+    assert_match(/Boot Structure Analysis/, content)
+    assert_match(/app\/models/, content)
+    assert_match(/app\/controllers/, content)
+    
+    # Teardown
+    File.delete(path)
+  end
+
   # Feature Test: Request Heft Workload
   def test_request_heft_workload
     # Load the workload file
@@ -107,5 +145,26 @@ class RailsBenchmarkSuiteTest < Minitest::Test
     # Execution test - block should return truthy (may skip if no Rails.application)
     result = workload[:block].call
     assert result, "Request Heft block should execute successfully or skip gracefully"
+  end
+
+  # Feature Test: Boot Analysis Integration
+  def test_boot_analysis_integration
+    # Mock Open3.capture2 to return valid boot analysis JSON
+    mock_json = '[{"path": "app/models", "time_ms": 150.5, "file_count": 10}]'
+    mock_status = Minitest::Mock.new
+    mock_status.expect :success?, true
+
+    Open3.stub :capture2, [mock_json, mock_status] do
+      runner = RailsBenchmarkSuite::Runner.new(RailsBenchmarkSuite::Configuration.new)
+      
+      # Test the private method directly
+      result = runner.send(:run_boot_analysis)
+      
+      assert result, "Boot analysis should return parsed data"
+      assert_equal 1, result.size
+      assert_equal "app/models", result.first[:path]
+      assert_equal 150.5, result.first[:time_ms]
+      assert_equal 10, result.first[:file_count]
+    end
   end
 end

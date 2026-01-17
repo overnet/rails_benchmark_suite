@@ -116,16 +116,54 @@ module RailsBenchmarkSuite
         renderer.border.separator = :each_row
         renderer.border.style = :blue
       end
+
+      # 2. Boot Structure Analysis
+      render_boot_analysis(payload[:boot_analysis])
       
-      # 2. Insights List
+      # 3. Insights List
       puts ""
       check_scaling_insights(results)
       check_yjit_insight
       check_memory_insights(results)
       
-      # 3. Final Score Dashboard
+      # 4. Final Score Dashboard
       render_final_score(total_score)
       show_hardware_tier(tier)
+    end
+
+    def render_boot_analysis(boot_data)
+      return unless boot_data&.any?
+
+      puts ""
+      puts pastel.bold("📂 Boot Structure Analysis")
+      puts ""
+
+      rows = boot_data.map do |entry|
+        time_ms = entry[:time_ms] || 0
+        
+        # Color coding: Red > 500ms, Yellow > 200ms, Green otherwise
+        time_color = if time_ms > 500
+          :red
+        elsif time_ms > 200
+          :yellow
+        else
+          :green
+        end
+        
+        time_str = pastel.decorate("#{time_ms.round(0)}ms", time_color)
+        
+        [entry[:path], time_str, entry[:file_count]]
+      end
+
+      table = TTY::Table.new(
+        header: ["Directory", "Load Time", "Files"],
+        rows: rows
+      )
+
+      puts table.render(:unicode, padding: [0, 1]) do |renderer|
+        renderer.border.separator = :each_row
+        renderer.border.style = :cyan
+      end
     end
 
     def check_scaling_insights(results)
