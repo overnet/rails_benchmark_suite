@@ -1,4 +1,10 @@
 # Changelog
+## [0.3.3] - 2026-01-06
+### Added
+- **Request Heft Workload**: A new benchmark measuring the full Rails stack overhead (Middleware + Router + Controller + View).
+- **Security**: Uses ephemeral in-memory route injection (zero production footprint/risk).
+- **Docs**: Updated weights and workload descriptions in README.
+
 ## [0.3.2] - 2026-01-05
 ### Refactoring & Polish
 - **DRY Logic**: Centralized "Efficiency" calculation; removed duplicate math from HTML templates.

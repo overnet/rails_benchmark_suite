@@ -90,4 +90,22 @@ class RailsBenchmarkSuiteTest < Minitest::Test
     # Teardown
     File.delete(path)
   end
+
+  # Feature Test: Request Heft Workload
+  def test_request_heft_workload
+    # Load the workload file
+    require "rails_benchmark_suite/workloads/request_heft_workload"
+
+    # Find the registered workload
+    workloads = RailsBenchmarkSuite::Runner.instance_variable_get(:@workloads)
+    workload = workloads.find { |w| w[:name] == "Request Heft" }
+
+    # Verify registration
+    assert workload, "Request Heft workload should be registered"
+    assert_equal 0.3, workload[:weight]
+
+    # Execution test - block should return truthy (may skip if no Rails.application)
+    result = workload[:block].call
+    assert result, "Request Heft block should execute successfully or skip gracefully"
+  end
 end

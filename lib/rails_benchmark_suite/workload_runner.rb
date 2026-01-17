@@ -6,13 +6,14 @@ require "tty-spinner"
 
 module RailsBenchmarkSuite
   class WorkloadRunner
-    # Base weights for each workload
+    # Base weights for each workload (must sum to 1.0)
     BASE_WEIGHTS = {
-      "Active Record Heft" => 0.4,
-      "View Heft" => 0.2,
-      "Solid Queue Heft" => 0.2,
-      "Cache Heft" => 0.1,
-      "Image Heft" => 0.1
+      "Active Record Heft" => 0.3,  # Reduced from 0.4
+      "Request Heft"       => 0.3,  # NEW: Full Stack Overhead
+      "View Heft"          => 0.1,  # Reduced from 0.2
+      "Solid Queue Heft"   => 0.1,  # Reduced from 0.2
+      "Cache Heft"         => 0.1,
+      "Image Heft"         => 0.1
     }.freeze
 
     def initialize(workloads, options: {}, show_progress: true)

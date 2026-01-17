@@ -156,9 +156,10 @@ RHI Score = Σ (4-Thread IPS × Weight)
 
 | Workload | Weight | Rationale |
 |----------|--------|-----------|  
-| **Active Record** | 40% | Database operations are the core of most Rails apps |
-| **View Rendering** | 20% | ERB/ActionView processing |
-| **Solid Queue** | 20% | Background job throughput |
+| **Active Record** | 30% | Database operations are the core of most Rails apps |
+| **Request Heft** | 30% | Full Stack Overhead (Middleware → Router → Controller) |
+| **View Rendering** | 10% | ERB/ActionView processing |
+| **Solid Queue** | 10% | Background job throughput |
 | **Cache Operations** | 10% | Memory store performance |
 | **Image Processing** | 10% | Optional - requires libvips |
 
@@ -181,6 +182,7 @@ Your RHI score maps to these performance tiers:
 The gem measures performance across critical Rails subsystems using a dedicated, isolated schema:
 
 * **Active Record Heft:** Standardized CRUD: Creation, indexing, and complex querying.
+* **Request Heft:** Full-stack request throughput (Middleware → Router → Controller).
 * **Cache Heft:** High-frequency read/writes to the Rails memory store.
 * **Solid Queue Heft:** Background job enqueuing and database-backed polling stress.
 * **View Heft:** Partial rendering overhead and ActionView throughput.
