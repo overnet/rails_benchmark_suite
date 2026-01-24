@@ -52,8 +52,8 @@ module RailsBenchmarkSuite
         show_progress: !@config.json
       ).execute
 
-      # 4. Boot Structure Analysis
-      payload[:boot_analysis] = run_boot_analysis unless @config.json
+      # 4. Boot Structure Analysis (run for all modes including JSON)
+      payload[:boot_analysis] = run_boot_analysis
       
       # 5. Report Results
       if @config.json

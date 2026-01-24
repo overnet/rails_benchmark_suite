@@ -104,7 +104,7 @@ Enable YJIT for maximum performance measurement accuracy. This is the recommende
 ```bash
 bundle exec rails_benchmark_suite --json > report.json
 ```
-Perfect for CI/CD pipelines and programmatic analysis. Outputs clean JSON without any UI elements.
+Perfect for CI/CD pipelines and programmatic analysis. Outputs clean JSON including Boot Structure Analysis and all workload metrics.
 
 ### 📊 Visual Diagnostics (HTML Report)
 

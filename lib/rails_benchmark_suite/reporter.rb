@@ -239,6 +239,7 @@ module RailsBenchmarkSuite
         system: system_info,
         total_score: payload[:total_score].round(0),
         tier: payload[:tier],
+        boot_analysis: payload[:boot_analysis] || [],
         workloads: []
       }
       
