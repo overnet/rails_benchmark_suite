@@ -79,12 +79,24 @@ module RailsBenchmarkSuite
         stdout, status = Open3.capture2("bundle", "exec", "ruby", script_path)
         return nil unless status.success?
 
-        results = JSON.parse(stdout, symbolize_names: true)
-        return nil if results.empty? || results.first&.dig(:error)
+        # Try to parse the whole output first
+        results = begin
+          JSON.parse(stdout, symbolize_names: true)
+        rescue JSON::ParserError
+          # Fallback: Try last line (in case silence failed and noise leaked)
+          last_line = stdout.strip.lines.last
+          begin
+            JSON.parse(last_line, symbolize_names: true)
+          rescue JSON::ParserError
+            nil
+          end
+        end
+
+        return nil if results.nil? || results.empty? || results.first&.dig(:error)
 
         # Sort by load time descending (slowest first)
         results.sort_by { |r| -(r[:time_ms] || 0) }
-      rescue JSON::ParserError, StandardError
+      rescue StandardError
         nil
       end
     end
