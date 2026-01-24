@@ -10,18 +10,16 @@ begin
   FileUtils.mkdir_p(ASSET_DIR)
   SAMPLE_IMAGE = File.join(ASSET_DIR, "sample.jpg")
 
-  # Only register if vips is actually available
-  RailsBenchmarkSuite::Runner.register_workload("Image Heft", weight: 0.1) do
-    # Gracefully handle missing dependencies
-    if File.exist?(SAMPLE_IMAGE)
+  # Only register if vips is available AND sample image exists
+  if File.exist?(SAMPLE_IMAGE)
+    RailsBenchmarkSuite::Runner.register_workload("Image Heft", weight: 0.1) do
       ImageProcessing::Vips
         .source(SAMPLE_IMAGE)
         .resize_to_limit(800, 800)
         .call
-    else
-      # Maintain benchmark stability if asset is missing
-      true
     end
+  else
+    puts "\n⚠️  Skipping Image Workload: sample.jpg not found in assets/\n\n"
   end
 
 rescue LoadError, StandardError
