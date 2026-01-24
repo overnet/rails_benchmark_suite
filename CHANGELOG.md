@@ -7,6 +7,7 @@
 - **Docs**: Updated weights and workload descriptions in README.
 
 ### Fixed
+- **Boot Profiler Stability**: The boot profiler now suppresses Rails logs and warnings to prevent JSON corruption.
 - **Infinite Score Bug**: Workloads now strictly check dependencies before registering. Missing dependencies (e.g. `--skip-rails`) correctly trigger weight redistribution instead of reporting infinite IPS.
 - **JSON Output**: Boot Structure Analysis is now included in the JSON report (`--json`) for CI/CD visibility.
 
