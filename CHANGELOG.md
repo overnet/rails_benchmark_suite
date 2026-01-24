@@ -11,6 +11,7 @@
 - **Boot Profiler Stability**: The boot profiler now suppresses Rails logs and warnings to prevent JSON corruption.
 - **Infinite Score Bug**: Workloads now strictly check dependencies before registering. Missing dependencies (e.g. `--skip-rails`) correctly trigger weight redistribution instead of reporting infinite IPS.
 - **JSON Output**: Boot Structure Analysis is now included in the JSON report (`--json`) for CI/CD visibility.
+- **UI**: Fixed character encoding issues in terminal reporter emojis.
 
 ## [0.3.2] - 2026-01-05
 ### Refactoring & Polish

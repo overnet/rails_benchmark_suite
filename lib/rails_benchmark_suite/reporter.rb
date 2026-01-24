@@ -135,7 +135,7 @@ module RailsBenchmarkSuite
       return unless boot_data&.any?
 
       puts ""
-      puts pastel.bold("📂 Boot Structure Analysis")
+      puts pastel.bold("\u{1F4C2} Boot Structure Analysis")
       puts ""
 
       rows = boot_data.map do |entry|
@@ -179,7 +179,7 @@ module RailsBenchmarkSuite
       end
       
       if poor_scaling.any?
-        puts pastel.yellow.bold("💡 Insight (Scaling):") + " Scaling below 1.0x detected."
+        puts pastel.yellow.bold("\u{1F4A1} Insight (Scaling):") + " Scaling below 1.0x detected."
         puts "   This indicates SQLite lock contention or Ruby GIL saturation."
       end
     end
@@ -187,7 +187,7 @@ module RailsBenchmarkSuite
     def check_yjit_insight
       unless yjit_enabled?
         puts ""
-        puts pastel.yellow.bold("💡 Insight (YJIT):") + " YJIT is OFF."
+        puts pastel.yellow.bold("\u{1F4A1} Insight (YJIT):") + " YJIT is OFF."
         puts "   Run with RUBY_OPT=\"--yjit\" for ~20% boost."
       end
     end
@@ -195,7 +195,7 @@ module RailsBenchmarkSuite
     def check_memory_insights(results)
       results.select { |r| r[:memory_delta_mb] > 20 }.each do |r|
         puts ""
-        puts pastel.yellow.bold("💡 Insight (Memory):") + " High growth in #{r[:name]} (#{r[:memory_delta_mb].round(1)}MB)"
+        puts pastel.yellow.bold("\u{1F4A1} Insight (Memory):") + " High growth in #{r[:name]} (#{r[:memory_delta_mb].round(1)}MB)"
         puts "   Suggests heavy object allocation."
       end
     end
@@ -211,7 +211,7 @@ module RailsBenchmarkSuite
       end
       
       puts ""
-      puts pastel.bold("📊 Performance Tier: ") + comparison
+      puts pastel.bold("\u{1F4CA} Performance Tier: ") + comparison
       puts ""
       print cursor.show
     end
