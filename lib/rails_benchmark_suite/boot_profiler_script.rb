@@ -37,9 +37,9 @@ begin
       break
     end
 
-    # Load Rails config without eager loading
+    # Load full Rails environment to initialize Zeitwerk autoloading
     ENV["RAILS_ENV"] ||= "development"
-    require File.join(Dir.pwd, "config", "application")
+    require File.join(Dir.pwd, "config", "environment")
   end
   
   # Check if we're in a Rails app (outside silence block)
